@@ -40,19 +40,27 @@ hierarchy.attachChild('H', 'J')
 
 ### Mutation
 
-#### `hierarchy.add(node)`
-#### `hierarchy.attachChild(parent, child)`
-#### `hierarchy.detachChild(parent, child)`
-#### `hierarchy.remove(node)`
+`hierarchy.add(node)`
+
+`hierarchy.attachChild(parent, child)`
+
+`hierarchy.detachChild(parent, child)`
+
+`hierarchy.remove(node)`
 
 ### Traversal
 
-#### `hierarchy.nodes()`
-#### `hierarchy.hierarchs()`
-#### `hierarchy.children(parent)`
-#### `hierarchy.parents(child)`
-#### `hierarchy.descendants(ancestor)`
-#### `hierarchy.ancestors(descendant)`
+`hierarchy.nodes()`
+
+`hierarchy.hierarchs()`
+
+`hierarchy.children(parent)`
+
+`hierarchy.parents(child)`
+
+`hierarchy.descendants(ancestor)`
+
+`hierarchy.ancestors(descendant)`
 
 ### Errors
 
