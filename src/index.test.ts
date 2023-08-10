@@ -133,7 +133,7 @@ describe("OverlappingHierarchy", () => {
   });
 
   describe(".nodes()", () => {
-    test("Returns all nodes", () => {
+    test("Returns nodes", () => {
       expect(family.nodes()).toStrictEqual(
         new Set([GRANDPARENT, PARENT, CHILD])
       );
@@ -141,7 +141,7 @@ describe("OverlappingHierarchy", () => {
   });
 
   describe(".hierarchs()", () => {
-    test("Returns all hierarchs", () => {
+    test("Returns hierarchs", () => {
       expect(family.hierarchs()).toStrictEqual(new Set([GRANDPARENT]));
     });
   });
