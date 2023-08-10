@@ -1,6 +1,6 @@
 {
   "name": "overlapping-hierarchy",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Library for modeling overlapping hierarchy, in which nodes can have multiple parents.",
   "main": "index.js",
   "scripts": {
