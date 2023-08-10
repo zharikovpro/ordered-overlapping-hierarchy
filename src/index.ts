@@ -80,7 +80,7 @@ export default class OverlappingHierarchy<Node> {
   }
 
   detachChild = (parent: Node, child: Node): void =>
-    this.#childrenMap.get(parent)?.delete(child) as void;
+    this.#childrenMap.get(parent)?.delete(child) as unknown as void;
 
   remove(node: Node): void {
     this.#childrenMap.delete(node);
