@@ -16,7 +16,7 @@
     "prepublish": "npm run ci && tsc"
   },
   "keywords": [
-    "hierarchy", "overlapping hierarchy", "multiple parents", "graph"
+    "hierarchy", "overlapping hierarchy", "parents", "multiple parents", "graph", "tree"
   ],
   "author": "Andrey Zharikov",
   "license": "MIT",
