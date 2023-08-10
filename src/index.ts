@@ -22,7 +22,7 @@ export default class OverlappingHierarchy<Node> {
     this.#childrenMap.set(node, this.#childrenMap.get(node) || new Set());
   }
 
-  attachChild(parent: Node, child: Node): OverlappingHierarchyError | void {
+  attach(parent: Node, child: Node): OverlappingHierarchyError | void {
     if (child === parent) return new LoopError("Cannot attach node to itself");
     if (this.nodes().has(child) && this.descendants(child)?.has(parent))
       return new CycleError("Cannot attach ancestor as a child");
@@ -79,11 +79,11 @@ export default class OverlappingHierarchy<Node> {
     );
   }
 
-  detachChild = (parent: Node, child: Node): void =>
+  detach = (parent: Node, child: Node): void =>
     this.#childrenMap.get(parent)?.delete(child) as unknown as void;
 
   remove(node: Node): void {
     this.#childrenMap.delete(node);
-    this.nodes().forEach((parent) => this.detachChild(parent, node));
+    this.nodes().forEach((parent) => this.detach(parent, node));
   }
 }

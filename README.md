@@ -18,16 +18,16 @@ D  E I  J
 const hierarchy = new OverlappingHierarchy()
 hierarchy.add('A')
 hierarchy.add('B')
-hierarchy.attachChild('A', 'C')
-hierarchy.attachChild('B', 'C')
-hierarchy.attachChild('C', 'D')
-hierarchy.attachChild('C', 'E')
+hierarchy.attach('A', 'C')
+hierarchy.attach('B', 'C')
+hierarchy.attach('C', 'D')
+hierarchy.attach('C', 'E')
 hierarchy.add('F')
 hierarchy.add('G')
-hierarchy.attachChild('F', 'H')
-hierarchy.attachChild('G', 'H')
-hierarchy.attachChild('H', 'I')
-hierarchy.attachChild('H', 'J')
+hierarchy.attach('F', 'H')
+hierarchy.attach('G', 'H')
+hierarchy.attach('H', 'I')
+hierarchy.attach('H', 'J')
 ```
 
 ## API
@@ -42,9 +42,9 @@ hierarchy.attachChild('H', 'J')
 
 `hierarchy.add(node)`
 
-`hierarchy.attachChild(parent, child)`
+`hierarchy.attach(parent, child)`
 
-`hierarchy.detachChild(parent, child)`
+`hierarchy.detach(parent, child)`
 
 `hierarchy.remove(node)`
 
@@ -67,17 +67,17 @@ hierarchy.attachChild('H', 'J')
 ### LoopError
 
 ```typescript
-hierarchy.attachChild('A', 'A') // LoopError: Cannot add node to itself
+hierarchy.attach('A', 'A') // LoopError: Cannot add node to itself
 ```
 
 ### CycleError
 
 ```typescript
-hierarchy.attachChild('D', 'A') // CycleError: Cannot add ancestor as a child
+hierarchy.attach('D', 'A') // CycleError: Cannot add ancestor as a child
 ```
 
 ### ConflictingParentsError
 
 ```typescript
-hierarchy.attachChild('A', 'D') // ConflictingParentsError: Cannot attach child to parent's ancestor
+hierarchy.attach('A', 'D') // ConflictingParentsError: Cannot attach child to parent's ancestor
 ```
