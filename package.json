@@ -1,6 +1,6 @@
 {
   "name": "overlapping-hierarchy",
-  "version": "0.1.9",
+  "version": "0.1.10",
   "description": "Library for modeling overlapping hierarchy, in which nodes can have multiple parents.",
   "repository": {
     "type": "git",
