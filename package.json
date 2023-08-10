@@ -1,7 +1,7 @@
 {
   "name": "overlapping-hierarchy",
-  "version": "0.1.0",
-  "description": "",
+  "version": "0.1.1",
+  "description": "Library for modeling overlapping hierarchy, in which nodes can have multiple parents.",
   "main": "index.js",
   "scripts": {
     "test": "jest",
