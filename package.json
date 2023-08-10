@@ -1,7 +1,11 @@
 {
   "name": "overlapping-hierarchy",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "description": "Library for modeling overlapping hierarchy, in which nodes can have multiple parents.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/zharikovpro/overlapping-hierarchy.git"
+  },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
