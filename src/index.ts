@@ -44,6 +44,7 @@ export default class OverlappingHierarchy<Node> {
 
   nodes = (): Set<Node> => new Set(this.#childrenMap.keys());
 
+  // TODO: backport x100 performance improvement from Rrrighter
   hierarchs = (): Set<Node> =>
     new Set(
       Array.from(this.nodes()).filter((node) => !this.parents(node)?.size)
@@ -82,6 +83,7 @@ export default class OverlappingHierarchy<Node> {
   detach = (parent: Node, child: Node): void =>
     this.#childrenMap.get(parent)?.delete(child) as unknown as void;
 
+  // TODO: rename to delete to resemble Set API
   remove(node: Node): void {
     this.#childrenMap.delete(node);
     this.nodes().forEach((parent) => this.detach(parent, node));
