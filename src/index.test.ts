@@ -144,6 +144,29 @@ describe("OverlappingHierarchy", () => {
     test("Returns hierarchs", () => {
       expect(family.hierarchs()).toStrictEqual(new Set([GRANDPARENT]));
     });
+
+    test("Given 1000 nodes, performs x200 times faster than previous implementation", () => {
+      class OldImplementation<Node> extends OverlappingHierarchy<Node> {
+        hierarchs = (): Set<Node> =>
+            new Set(
+                Array.from(this.nodes()).filter((node) => !this.parents(node)?.size)
+            );
+      }
+
+      const measureDuration = (hierarchy: OverlappingHierarchy<number>): number => {
+        for (let i = 0; i < 1000; i++) {
+          hierarchy.add(i);
+        }
+        const start = Date.now();
+        hierarchy.hierarchs();
+        return Date.now() - start;
+      }
+
+      const oldDuration = measureDuration(new OldImplementation<number>());
+      const newDuration = measureDuration(new OverlappingHierarchy<number>());
+
+      expect(newDuration).toBeLessThan(oldDuration / 200);
+    })
   });
 
   describe(".descendants()", () => {

@@ -46,7 +46,7 @@ hierarchy.attach('H', 'J')
 
 `hierarchy.detach(parent, child)`
 
-`hierarchy.remove(node)`
+`hierarchy.delete(node)`
 
 ### Traversal
 

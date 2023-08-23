@@ -44,11 +44,11 @@ export default class OverlappingHierarchy<Node> {
 
   nodes = (): Set<Node> => new Set(this.#childrenMap.keys());
 
-  // TODO: backport x100 performance improvement from Rrrighter
-  hierarchs = (): Set<Node> =>
-    new Set(
-      Array.from(this.nodes()).filter((node) => !this.parents(node)?.size)
-    );
+  hierarchs = (): Set<Node> => {
+    const nodes = this.nodes()
+    this.nodes().forEach((n) => this.children(n)?.forEach((c) => nodes.delete(c)))
+    return nodes
+  }
 
   descendants(ancestor: Node): Set<Node> | undefined {
     if (!this.children(ancestor)) return undefined;
