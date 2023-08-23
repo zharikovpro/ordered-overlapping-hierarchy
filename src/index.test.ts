@@ -38,7 +38,7 @@ describe("OverlappingHierarchy", () => {
     test("Restructuring a clone keeps the source structure intact", () => {
       const originalNodes = family.nodes();
       for (const node of clone.nodes()) {
-        clone.remove(node);
+        clone.delete(node);
       }
       clone.add("New Child");
       clone.attach("New Child", "New Parent");
@@ -203,26 +203,26 @@ describe("OverlappingHierarchy", () => {
     });
   });
 
-  describe(".remove()", function () {
+  describe(".delete()", function () {
     test("Detaches all children from the parent", () => {
-      family.remove(PARENT);
+      family.delete(PARENT);
       expect(family.parents(CHILD)).toEqual(new Set([]));
     });
 
     test("Detaches child from all parents", () => {
-      family.remove(PARENT);
+      family.delete(PARENT);
       expect(family.children(GRANDPARENT)?.has(PARENT)).toStrictEqual(false);
     });
 
     test("Hierarchy no longer has removed node", () => {
-      family.remove(PARENT);
+      family.delete(PARENT);
       expect(family.nodes().has(PARENT)).toStrictEqual(false);
     });
 
     test("Removing the only node of the hierarchy empties the hierarchy", () => {
       const hierarchy = new OverlappingHierarchy<string>();
       hierarchy.add("orphan");
-      hierarchy.remove("orphan");
+      hierarchy.delete("orphan");
       expect(hierarchy.nodes()).toStrictEqual(new Set());
     });
   });
