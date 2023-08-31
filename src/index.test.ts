@@ -1,7 +1,7 @@
 import OverlappingHierarchy, {
   CycleError,
   LoopError,
-  ConflictingParentsError,
+  TransitiveReductionError,
 } from "./index";
 
 const CHILD = "child";
@@ -100,9 +100,9 @@ describe("OverlappingHierarchy", () => {
       );
     });
 
-    test("Attaching non-child descendant as a child returns ConflictingParentsError", () => {
+    test("Attaching non-child descendant as a child returns TransitiveReductionError", () => {
       expect(family.attach(GRANDPARENT, CHILD)).toStrictEqual(
-        new ConflictingParentsError(`Cannot attach child to parent's ancestor`)
+        new TransitiveReductionError(`Cannot attach child to parent's ancestor`)
       );
     });
 

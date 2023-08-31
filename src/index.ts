@@ -7,7 +7,7 @@ class OverlappingHierarchyError extends Error {
 
 export class LoopError extends OverlappingHierarchyError {}
 export class CycleError extends OverlappingHierarchyError {}
-export class ConflictingParentsError extends OverlappingHierarchyError {}
+export class TransitiveReductionError extends OverlappingHierarchyError {} // https://en.wikipedia.org/wiki/Transitive_reduction#In_directed_acyclic_graphs
 
 export default class OverlappingHierarchy<Node> {
   #childrenMap: Map<Node, Set<Node>> = new Map();
@@ -27,7 +27,7 @@ export default class OverlappingHierarchy<Node> {
     if (this.nodes().has(child) && this.descendants(child)?.has(parent))
       return new CycleError("Cannot attach ancestor as a child");
     if (this.descendants(parent)?.has(child))
-      return new ConflictingParentsError(
+      return new TransitiveReductionError(
         "Cannot attach child to parent's ancestor"
       );
 

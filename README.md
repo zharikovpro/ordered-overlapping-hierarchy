@@ -76,8 +76,8 @@ hierarchy.attach('A', 'A') // LoopError: Cannot add node to itself
 hierarchy.attach('D', 'A') // CycleError: Cannot add ancestor as a child
 ```
 
-### ConflictingParentsError
+### TransitiveReductionError
 
 ```typescript
-hierarchy.attach('A', 'D') // ConflictingParentsError: Cannot attach child to parent's ancestor
+hierarchy.attach('A', 'D') // TransitiveReductionError: Cannot attach child to parent's ancestor
 ```
