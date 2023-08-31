@@ -102,7 +102,16 @@ describe("OverlappingHierarchy", () => {
 
     test("Attaching non-child descendant as a child returns TransitiveReductionError", () => {
       expect(family.attach(GRANDPARENT, CHILD)).toStrictEqual(
-        new TransitiveReductionError(`Cannot attach non-child descendant as a child`) // TODO: test for child
+        new TransitiveReductionError(`Cannot attach non-child descendant as a child`)
+      );
+    });
+
+    test("Attaching bottom of the diamond to the top returns TransitiveReductionError", () => {
+      family.add('p2')
+      family.attach(GRANDPARENT, 'p2')
+      family.attach('p2', CHILD)
+      expect(family.attach(GRANDPARENT, CHILD)).toStrictEqual(
+          new TransitiveReductionError(`Cannot attach non-child descendant as a child`)
       );
     });
 
