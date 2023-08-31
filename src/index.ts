@@ -26,7 +26,10 @@ export default class OverlappingHierarchy<Node> {
     if (child === parent) return new LoopError("Cannot attach node to itself");
     if (this.nodes().has(child) && this.descendants(child)?.has(parent))
       return new CycleError("Cannot attach ancestor as a child");
-    if (!this.children(parent)?.has(child) && this.descendants(parent)?.has(child))
+    if (
+      !this.children(parent)?.has(child) &&
+      this.descendants(parent)?.has(child)
+    )
       return new TransitiveReductionError(
         "Cannot attach non-child descendant as a child"
       );
