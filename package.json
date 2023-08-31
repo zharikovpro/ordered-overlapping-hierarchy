@@ -4,7 +4,7 @@
   "description": "Library for modeling overlapping hierarchy, in which nodes can have multiple parents.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/zharikovpro/overlapping-hierarchy.git"
+    "url": "git+https://github.com/zharikovpro/overlapping-hierarchy.git"
   },
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -16,7 +16,12 @@
     "prepublish": "npm run ci && tsc"
   },
   "keywords": [
-    "hierarchy", "overlapping hierarchy", "parents", "multiple parents", "graph", "tree"
+    "hierarchy",
+    "overlapping hierarchy",
+    "parents",
+    "multiple parents",
+    "graph",
+    "tree"
   ],
   "author": "Andrey Zharikov",
   "license": "MIT",
