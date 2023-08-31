@@ -102,13 +102,18 @@ describe("OverlappingHierarchy", () => {
 
     test("Attaching non-child descendant as a child returns TransitiveReductionError", () => {
       expect(family.attach(GRANDPARENT, CHILD)).toStrictEqual(
-        new TransitiveReductionError(`Cannot attach child to parent's ancestor`)
+        new TransitiveReductionError(`Cannot attach non-child descendant as a child`) // TODO: test for child
       );
     });
 
     test("Attaches node to the parent as a child", () => {
       family.attach(CHILD, "grandchild");
       expect(family.children(CHILD)).toStrictEqual(new Set(["grandchild"]));
+    });
+
+    test("Attaching the same child again does not return error", () => {
+      family.attach(CHILD, "grandchild");
+      expect(family.attach(CHILD, "grandchild")).toBeUndefined()
     });
 
     test("Attaching node to a non-existing parent also adds parent", () => {
