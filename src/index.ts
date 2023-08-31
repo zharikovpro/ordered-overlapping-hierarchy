@@ -12,6 +12,10 @@ export class TransitiveReductionError extends OverlappingHierarchyError {} // ht
 export default class OverlappingHierarchy<Node> {
   #childrenMap: Map<Node, Set<Node>> = new Map();
 
+  #intersection(a: Set<Node>, b: Set<Node>): Set<Node> {
+    return new Set([...a].filter((x) => b.has(x)));
+  }
+
   constructor(source?: OverlappingHierarchy<Node>) {
     source?.nodes().forEach((node) => {
       this.#childrenMap.set(node, source.children(node) || new Set());
@@ -32,6 +36,15 @@ export default class OverlappingHierarchy<Node> {
     )
       return new TransitiveReductionError(
         "Cannot attach non-child descendant as a child"
+      );
+    if (
+      this.#intersection(
+        this.descendants(child) || new Set(),
+        this.children(parent) || new Set()
+      ).size > 0
+    )
+      return new TransitiveReductionError(
+        "Cannot attach child whose descendant is a child of the parent"
       );
 
     if (this.#childrenMap.get(parent) === undefined) this.add(parent);

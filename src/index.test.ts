@@ -119,6 +119,16 @@ describe("OverlappingHierarchy", () => {
       );
     });
 
+    test("Attaching another ancestor of a child returns TransitiveReductionError", () => {
+      family.add("p2");
+      family.attach("p2", CHILD);
+      expect(family.attach(PARENT, "p2")).toStrictEqual(
+        new TransitiveReductionError(
+          `Cannot attach child whose descendant is a child of the parent`
+        )
+      );
+    });
+
     test("Attaches node to the parent as a child", () => {
       family.attach(CHILD, "grandchild");
       expect(family.children(CHILD)).toStrictEqual(new Set(["grandchild"]));
