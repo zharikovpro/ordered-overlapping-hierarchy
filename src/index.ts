@@ -16,6 +16,9 @@ export default class OverlappingHierarchy<Node> {
     return new Set([...a].filter((x) => b.has(x)));
   }
 
+  #filterNodes = (filter: (node: Node) => boolean): Set<Node> =>
+    new Set(Array.from(this.nodes()).filter(filter));
+
   constructor(source?: OverlappingHierarchy<Node>) {
     source?.nodes().forEach((node) => {
       this.#childrenMap.set(node, source.children(node) || new Set());
@@ -82,20 +85,13 @@ export default class OverlappingHierarchy<Node> {
   ancestors(descendant: Node): Set<Node> | undefined {
     if (!this.children(descendant)) return undefined;
 
-    const parents = new Set(this.parents(descendant));
-    const parentsAncestors = Array.from(parents).flatMap((parent) =>
-      Array.from(this.ancestors(parent) || [])
-    );
-
-    return new Set([...parents, ...parentsAncestors]);
+    return this.#filterNodes((n) => !!this.descendants(n)?.has(descendant));
   }
 
   parents(child: Node): Set<Node> | undefined {
     if (!this.children(child)) return undefined;
 
-    return new Set(
-      Array.from(this.nodes()).filter((node) => this.children(node)?.has(child))
-    );
+    return this.#filterNodes((n) => !!this.children(n)?.has(child));
   }
 
   detach = (parent: Node, child: Node): void =>
