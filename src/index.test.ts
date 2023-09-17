@@ -47,8 +47,8 @@ describe("OverlappingHierarchy", () => {
   });
 
   describe(".children()", () => {
-    test("Returns children", () => {
-      expect(family.children(PARENT)).toStrictEqual(new Set([CHILD]));
+    test("Returns children in order", () => {
+      expect(family.children(PARENT)).toStrictEqual([CHILD]); // todo: make it work for younger
     });
 
     test("When parent does not exist, returns undefined", () => {
@@ -57,8 +57,8 @@ describe("OverlappingHierarchy", () => {
 
     test("Mutating returned set does not affect hierarchy", () => {
       const children = family.children(PARENT);
-      children?.clear();
-      expect(family.children(PARENT)?.has(CHILD)).toStrictEqual(true);
+      children?.pop();
+      expect(family.children(PARENT)?.includes(CHILD)).toStrictEqual(true);
     });
   });
 
@@ -131,7 +131,7 @@ describe("OverlappingHierarchy", () => {
 
     test("Attaches node to the parent as a child", () => {
       family.attach(CHILD, "grandchild");
-      expect(family.children(CHILD)).toStrictEqual(new Set(["grandchild"]));
+      expect(family.children(CHILD)).toStrictEqual(["grandchild"]);
     });
 
     test("Attaching the same child again does not return error", () => {
@@ -147,7 +147,7 @@ describe("OverlappingHierarchy", () => {
     test("Attaches node to another parent as a child", () => {
       family.attach(GRANDPARENT, "another parent");
       family.attach("another parent", CHILD);
-      expect(family.children("another parent")?.has(CHILD)).toStrictEqual(true);
+      expect(family.children("another parent")?.includes(CHILD)).toStrictEqual(true);
     });
 
     test("Attached child has a parent", () => {
@@ -240,14 +240,14 @@ describe("OverlappingHierarchy", () => {
   describe(".detach()", () => {
     test("Parent no longer has detached child", () => {
       family.detach(PARENT, CHILD);
-      expect(family.children(PARENT)?.has(CHILD)).toStrictEqual(false);
+      expect(family.children(PARENT)?.includes(CHILD)).toStrictEqual(false);
     });
 
     test("Detached child still belongs to another parent", () => {
       family.add("parent2");
       family.attach("parent2", CHILD);
       family.detach(PARENT, CHILD);
-      expect(family.children("parent2")?.has(CHILD)).toStrictEqual(true);
+      expect(family.children("parent2")?.includes(CHILD)).toStrictEqual(true);
     });
 
     test("Child detached from the only parent still belongs to the hierarchy", () => {
@@ -264,7 +264,7 @@ describe("OverlappingHierarchy", () => {
 
     test("Detaches child from all parents", () => {
       family.delete(PARENT);
-      expect(family.children(GRANDPARENT)?.has(PARENT)).toStrictEqual(false);
+      expect(family.children(GRANDPARENT)?.includes(PARENT)).toStrictEqual(false);
     });
 
     test("Hierarchy no longer has removed node", () => {
