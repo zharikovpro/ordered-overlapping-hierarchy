@@ -12,9 +12,8 @@ export class TransitiveReductionError extends OverlappingHierarchyError {} // ht
 export default class OverlappingHierarchy<Node> {
   #childrenMap: Map<Node, Set<Node>> = new Map();
 
-  #intersection(a: Set<Node>, b: Set<Node>): Set<Node> {
-    return new Set([...a].filter((x) => b.has(x)));
-  }
+  #intersection = (a: Set<Node>, b: Set<Node>): Set<Node> =>
+    new Set([...a].filter((x) => b.has(x)));
 
   #filterNodes = (filter: (node: Node) => boolean): Set<Node> =>
     new Set(Array.from(this.nodes()).filter(filter));
@@ -50,14 +49,14 @@ export default class OverlappingHierarchy<Node> {
         "Cannot attach child whose descendant is a child of the parent"
       );
 
-    if (this.#childrenMap.get(parent) === undefined) this.add(parent);
+    if (!this.#childrenMap.has(parent)) this.add(parent);
 
     this.#childrenMap.get(parent)?.add(child);
     this.add(child);
   }
 
   children = (parent: Node): Set<Node> | undefined =>
-    this.#childrenMap.get(parent)
+    this.#childrenMap.has(parent)
       ? new Set(this.#childrenMap.get(parent))
       : undefined;
 
@@ -72,7 +71,7 @@ export default class OverlappingHierarchy<Node> {
   };
 
   descendants(ancestor: Node): Set<Node> | undefined {
-    if (!this.children(ancestor)) return undefined;
+    if (!this.#childrenMap.has(ancestor)) return undefined;
 
     const children = new Set(this.children(ancestor));
     const childrenDescendants = Array.from(children).flatMap((child) =>
@@ -82,17 +81,15 @@ export default class OverlappingHierarchy<Node> {
     return new Set([...children, ...childrenDescendants]);
   }
 
-  ancestors(descendant: Node): Set<Node> | undefined {
-    if (!this.children(descendant)) return undefined;
+  ancestors = (descendant: Node): Set<Node> | undefined =>
+    this.#childrenMap.has(descendant)
+      ? this.#filterNodes((n) => !!this.descendants(n)?.has(descendant))
+      : undefined;
 
-    return this.#filterNodes((n) => !!this.descendants(n)?.has(descendant));
-  }
-
-  parents(child: Node): Set<Node> | undefined {
-    if (!this.children(child)) return undefined;
-
-    return this.#filterNodes((n) => !!this.children(n)?.has(child));
-  }
+  parents = (child: Node): Set<Node> | undefined =>
+    this.#childrenMap.has(child)
+      ? this.#filterNodes((n) => !!this.children(n)?.has(child))
+      : undefined;
 
   detach = (parent: Node, child: Node): void =>
     this.#childrenMap.get(parent)?.delete(child) as unknown as void;
