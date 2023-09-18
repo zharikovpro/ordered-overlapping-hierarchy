@@ -147,7 +147,9 @@ describe("OverlappingHierarchy", () => {
     test("Attaches node to another parent as a child", () => {
       family.attach(GRANDPARENT, "another parent");
       family.attach("another parent", CHILD);
-      expect(family.children("another parent")?.includes(CHILD)).toStrictEqual(true);
+      expect(family.children("another parent")?.includes(CHILD)).toStrictEqual(
+        true
+      );
     });
 
     test("Attached child has a parent", () => {
@@ -264,7 +266,9 @@ describe("OverlappingHierarchy", () => {
 
     test("Detaches child from all parents", () => {
       family.delete(PARENT);
-      expect(family.children(GRANDPARENT)?.includes(PARENT)).toStrictEqual(false);
+      expect(family.children(GRANDPARENT)?.includes(PARENT)).toStrictEqual(
+        false
+      );
     });
 
     test("Hierarchy no longer has removed node", () => {
