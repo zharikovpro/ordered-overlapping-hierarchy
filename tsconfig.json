@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "skipLibCheck": true,
+    "strict": true,
+    "module": "esnext",
+    "target": "esnext",
+    "sourceMap": true,
+    "declaration": true,
+    "outDir": "dist",
+  },
+  "files": ["src/index.ts", "src/index.test.ts"]
+}
