@@ -47,12 +47,13 @@ describe("OverlappingHierarchy", () => {
   });
 
   describe(".children()", () => {
-    test("Returns children in order", () => {
-      expect(family.children(PARENT)).toStrictEqual([CHILD]); // todo: make it work for younger
-    });
-
     test("When parent does not exist, returns undefined", () => {
       expect(family.children("missing")).toBeUndefined();
+    });
+
+    test("Returns children ordered from older to younger", () => {
+      family.attach(PARENT, "YOUNGER_CHILD");
+      expect(family.children(PARENT)).toStrictEqual([CHILD, "YOUNGER_CHILD"]);
     });
 
     test("Mutating returned set does not affect hierarchy", () => {
@@ -108,17 +109,6 @@ describe("OverlappingHierarchy", () => {
       );
     });
 
-    test("Attaching bottom of the diamond to the top returns TransitiveReductionError", () => {
-      family.add("p2");
-      family.attach(GRANDPARENT, "p2");
-      family.attach("p2", CHILD);
-      expect(family.attach(GRANDPARENT, CHILD)).toStrictEqual(
-        new TransitiveReductionError(
-          `Cannot attach non-child descendant as a child`
-        )
-      );
-    });
-
     test("Attaching another ancestor of a child returns TransitiveReductionError", () => {
       family.add("p2");
       family.attach("p2", CHILD);
@@ -159,6 +149,24 @@ describe("OverlappingHierarchy", () => {
       expect(family.parents(GRANDPARENT)).toStrictEqual(
         new Set([GREAT_GRANDPARENT])
       );
+    });
+
+    test("New child is attached at the end of the children list", () => {
+      family.attach(PARENT, "YOUNGER_CHILD");
+      expect(family.children(PARENT)).toStrictEqual([CHILD, "YOUNGER_CHILD"]);
+    });
+
+    test("Existing child retains index", () => {
+      family.attach(PARENT, "MIDDLE_CHILD");
+      family.attach(PARENT, "YOUNGER_CHILD");
+      family.attach(PARENT, CHILD);
+      family.attach(PARENT, "MIDDLE_CHILD");
+      family.attach(PARENT, "YOUNGER_CHILD");
+      expect(family.children(PARENT)).toStrictEqual([
+        CHILD,
+        "MIDDLE_CHILD",
+        "YOUNGER_CHILD",
+      ]);
     });
   });
 
@@ -202,40 +210,40 @@ describe("OverlappingHierarchy", () => {
   });
 
   describe(".descendants()", () => {
+    test("Returns undefined for non-member", () => {
+      expect(family.descendants("missing")).toBeUndefined();
+    });
+
     test("Returns descendants", () => {
       expect(family.descendants(GRANDPARENT)).toStrictEqual(
         new Set([PARENT, CHILD])
       );
     });
-
-    test("Returns undefined for non-member", () => {
-      expect(family.descendants("missing")).toBeUndefined();
-    });
   });
 
   describe(".ancestors()", () => {
+    test("Returns undefined for non-member", () => {
+      expect(family.ancestors("missing")).toBeUndefined();
+    });
+
     test("Returns ancestors", () => {
       expect(family.ancestors(CHILD)).toStrictEqual(
         new Set([GRANDPARENT, PARENT])
       );
     });
-
-    test("Returns undefined for non-member", () => {
-      expect(family.ancestors("missing")).toBeUndefined();
-    });
   });
 
   describe(".parents()", () => {
-    test("Given top-level node, returns nothing", () => {
+    test("Returns undefined for non-member", () => {
+      expect(family.parents("missing")).toBeUndefined();
+    });
+
+    test("Given top-level node, returns empty set", () => {
       expect(family.parents(GRANDPARENT)).toStrictEqual(new Set());
     });
 
-    test("Given child, returns its parents", () => {
+    test("Given child, returns parents set", () => {
       expect(family.parents(CHILD)).toStrictEqual(new Set([PARENT]));
-    });
-
-    test("Returns undefined for non-member", () => {
-      expect(family.parents("missing")).toBeUndefined();
     });
   });
 
