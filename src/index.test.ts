@@ -151,23 +151,44 @@ describe("OverlappingHierarchy", () => {
       );
     });
 
-    test("New child is attached at the end of the children list", () => {
-      family.attach(PARENT, "YOUNGER_CHILD");
-      expect(family.children(PARENT)).toStrictEqual([CHILD, "YOUNGER_CHILD"]);
-    });
+    describe('Ordering', () => {
+      test("New child is attached at the end of the children list by default", () => {
+        family.attach(PARENT, "YOUNGER_CHILD");
+        expect(family.children(PARENT)).toStrictEqual([CHILD, "YOUNGER_CHILD"]);
+      });
 
-    test("Existing child retains index", () => {
-      family.attach(PARENT, "MIDDLE_CHILD");
-      family.attach(PARENT, "YOUNGER_CHILD");
-      family.attach(PARENT, CHILD);
-      family.attach(PARENT, "MIDDLE_CHILD");
-      family.attach(PARENT, "YOUNGER_CHILD");
-      expect(family.children(PARENT)).toStrictEqual([
-        CHILD,
-        "MIDDLE_CHILD",
-        "YOUNGER_CHILD",
-      ]);
-    });
+      test("Existing child retains index by default", () => {
+        family.attach(PARENT, "MIDDLE_CHILD");
+        family.attach(PARENT, "YOUNGER_CHILD");
+        family.attach(PARENT, CHILD);
+        family.attach(PARENT, "MIDDLE_CHILD");
+        family.attach(PARENT, "YOUNGER_CHILD");
+        expect(family.children(PARENT)).toStrictEqual([
+          CHILD,
+          "MIDDLE_CHILD",
+          "YOUNGER_CHILD",
+        ]);
+      });
+
+      test("Zero index inserts new child at the beginning", () => {
+        family.attach(PARENT, "OLDEST_CHILD", 0);
+        expect(family.children(PARENT)).toStrictEqual([
+          "OLDEST_CHILD",
+          CHILD
+        ]);
+      });
+
+      test("Zero index moves existing child to the beginning", () => {
+        family.attach(PARENT, "SECOND");
+        family.attach(PARENT, "SECOND", 0);
+        expect(family.children(PARENT)).toStrictEqual([
+          "SECOND",
+          CHILD
+        ]);
+      });
+
+      // todo: middle index
+    })
   });
 
   describe(".nodes()", () => {

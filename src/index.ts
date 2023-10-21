@@ -10,7 +10,7 @@ export class CycleError extends OverlappingHierarchyError {}
 export class TransitiveReductionError extends OverlappingHierarchyError {} // https://en.wikipedia.org/wiki/Transitive_reduction#In_directed_acyclic_graphs
 
 export default class OverlappingHierarchy<Node> {
-  #childrenMap: Map<Node, Set<Node>> = new Map();
+  #childrenMap: Map<Node, Array<Node>> = new Map();
 
   #intersection = (a: Set<Node>, b: Set<Node>): Set<Node> =>
     new Set([...a].filter((x) => b.has(x)));
@@ -20,15 +20,15 @@ export default class OverlappingHierarchy<Node> {
 
   constructor(source?: OverlappingHierarchy<Node>) {
     source?.nodes().forEach((node) => {
-      this.#childrenMap.set(node, new Set(source.children(node)) || new Set());
+      this.#childrenMap.set(node, Array.from(source.children(node) || []));
     });
   }
 
   add(node: Node): void {
-    this.#childrenMap.set(node, this.#childrenMap.get(node) || new Set());
+    this.#childrenMap.set(node, this.#childrenMap.get(node) || []);
   }
 
-  attach(parent: Node, child: Node): OverlappingHierarchyError | void {
+  attach(parent: Node, child: Node, index?: 0 | undefined): OverlappingHierarchyError | void {
     if (child === parent) return new LoopError("Cannot attach node to itself");
     if (this.nodes().has(child) && this.descendants(child)?.has(parent))
       return new CycleError("Cannot attach ancestor as a child");
@@ -51,12 +51,23 @@ export default class OverlappingHierarchy<Node> {
 
     this.add(parent);
     this.add(child);
-    this.#childrenMap.get(parent)?.add(child);
+
+    if (this.#childrenMap.get(parent)?.includes(child)) {
+      this.detach(parent, child)
+    }
+
+    if (index === 0) {
+      this.#childrenMap.get(parent)?.unshift(child);
+    } else {
+      this.#childrenMap.get(parent)?.push(child);
+    }
+
+    // https://stackoverflow.com/questions/5306680/move-an-array-element-from-one-array-position-to-another
   }
 
   children = (parent: Node): Array<Node> | undefined =>
     this.#childrenMap.has(parent)
-      ? Array.from(this.#childrenMap.get(parent) as Set<Node>)
+      ? Array.from(this.#childrenMap.get(parent) as Array<Node>)
       : undefined;
 
   nodes = (): Set<Node> => new Set(this.#childrenMap.keys());
@@ -91,7 +102,7 @@ export default class OverlappingHierarchy<Node> {
       : undefined;
 
   detach = (parent: Node, child: Node): void =>
-    this.#childrenMap.get(parent)?.delete(child) as unknown as void;
+    this.#childrenMap.set(parent, (this.#childrenMap.get(parent) || []).filter((val) => val !== child)) as unknown as void;
 
   delete(node: Node): void {
     this.#childrenMap.delete(node);
