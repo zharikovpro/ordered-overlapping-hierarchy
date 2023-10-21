@@ -28,7 +28,7 @@ export default class OverlappingHierarchy<Node> {
     this.#childrenMap.set(node, this.#childrenMap.get(node) || []);
   }
 
-  attach(parent: Node, child: Node, index?: 0 | undefined): OverlappingHierarchyError | void {
+  attach(parent: Node, child: Node, index?: number): OverlappingHierarchyError | void {
     if (child === parent) return new LoopError("Cannot attach node to itself");
     if (this.nodes().has(child) && this.descendants(child)?.has(parent))
       return new CycleError("Cannot attach ancestor as a child");
@@ -56,13 +56,7 @@ export default class OverlappingHierarchy<Node> {
       this.detach(parent, child)
     }
 
-    if (index === 0) {
-      this.#childrenMap.get(parent)?.unshift(child);
-    } else {
-      this.#childrenMap.get(parent)?.push(child);
-    }
-
-    // https://stackoverflow.com/questions/5306680/move-an-array-element-from-one-array-position-to-another
+    this.#childrenMap.get(parent)!.splice(index ?? this.#childrenMap.get(parent)!.length, 0, child);
   }
 
   children = (parent: Node): Array<Node> | undefined =>

@@ -42,7 +42,7 @@ hierarchy.attach('H', 'J')
 
 `hierarchy.add(node)`
 
-`hierarchy.attach(parent, child)`
+`hierarchy.attach(parent, child, index?)`
 
 `hierarchy.detach(parent, child)`
 

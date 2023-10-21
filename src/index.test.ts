@@ -187,7 +187,26 @@ describe("OverlappingHierarchy", () => {
         ]);
       });
 
-      // todo: middle index
+      test("Non-zero index inserts new child in the middle", () => {
+        family.attach(PARENT, "YOUNGER");
+        family.attach(PARENT, "MIDDLE", 1);
+        expect(family.children(PARENT)).toStrictEqual([
+          CHILD,
+          "MIDDLE",
+          "YOUNGER"
+        ]);
+      });
+
+      test("Non-zero index moves first child in the middle", () => {
+        family.attach(PARENT, "MIDDLE");
+        family.attach(PARENT, "YOUNGER");
+        family.attach(PARENT, CHILD, 1);
+        expect(family.children(PARENT)).toStrictEqual([
+          "MIDDLE",
+          CHILD,
+          "YOUNGER"
+        ]);
+      });
     })
   });
 
