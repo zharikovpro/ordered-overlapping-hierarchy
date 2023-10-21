@@ -60,9 +60,10 @@ export default class OverlappingHierarchy<Node> {
       this.detach(parent, child);
     }
 
-    this.#childrenMap
-      .get(parent)!
-      .splice(index ?? this.#childrenMap.get(parent)!.length, 0, child);
+    const children = this.#childrenMap.get(parent);
+    if (children) {
+      children.splice(index ?? children.length, 0, child);
+    }
   }
 
   children = (parent: Node): Array<Node> | undefined =>
