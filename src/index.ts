@@ -56,9 +56,7 @@ export default class OverlappingHierarchy<Node> {
     this.add(parent);
     this.add(child);
 
-    if (this.#childrenMap.get(parent)?.includes(child)) {
-      this.detach(parent, child);
-    }
+    this.detach(parent, child);
 
     const children = this.#childrenMap.get(parent);
     if (children) {
