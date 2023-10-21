@@ -204,10 +204,7 @@ describe("OverlappingHierarchy", () => {
 
       test("Index bigger than number of items attaches child at the end", () => {
         family.attach(PARENT, "LAST", 100);
-        expect(family.children(PARENT)).toStrictEqual([
-          CHILD,
-          "LAST",
-        ]);
+        expect(family.children(PARENT)).toStrictEqual([CHILD, "LAST"]);
       });
     });
   });
