@@ -151,7 +151,7 @@ describe("OverlappingHierarchy", () => {
       );
     });
 
-    describe('Ordering', () => {
+    describe("Ordering", () => {
       test("New child is attached at the end of the children list by default", () => {
         family.attach(PARENT, "YOUNGER_CHILD");
         expect(family.children(PARENT)).toStrictEqual([CHILD, "YOUNGER_CHILD"]);
@@ -172,19 +172,13 @@ describe("OverlappingHierarchy", () => {
 
       test("Zero index inserts new child at the beginning", () => {
         family.attach(PARENT, "OLDEST_CHILD", 0);
-        expect(family.children(PARENT)).toStrictEqual([
-          "OLDEST_CHILD",
-          CHILD
-        ]);
+        expect(family.children(PARENT)).toStrictEqual(["OLDEST_CHILD", CHILD]);
       });
 
       test("Zero index moves existing child to the beginning", () => {
         family.attach(PARENT, "SECOND");
         family.attach(PARENT, "SECOND", 0);
-        expect(family.children(PARENT)).toStrictEqual([
-          "SECOND",
-          CHILD
-        ]);
+        expect(family.children(PARENT)).toStrictEqual(["SECOND", CHILD]);
       });
 
       test("Non-zero index inserts new child in the middle", () => {
@@ -193,7 +187,7 @@ describe("OverlappingHierarchy", () => {
         expect(family.children(PARENT)).toStrictEqual([
           CHILD,
           "MIDDLE",
-          "YOUNGER"
+          "YOUNGER",
         ]);
       });
 
@@ -204,10 +198,10 @@ describe("OverlappingHierarchy", () => {
         expect(family.children(PARENT)).toStrictEqual([
           "MIDDLE",
           CHILD,
-          "YOUNGER"
+          "YOUNGER",
         ]);
       });
-    })
+    });
   });
 
   describe(".nodes()", () => {
