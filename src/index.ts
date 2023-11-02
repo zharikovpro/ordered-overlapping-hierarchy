@@ -25,12 +25,13 @@ export default class OverlappingHierarchy<Node> {
   }
 
   add(node: Node): void {
+    // todo: use ordered array for hierarchs sorting
     this.#childrenMap.set(node, this.#childrenMap.get(node) || []);
   }
 
   attach(
-    parent: Node,
     child: Node,
+    parent: Node,
     index?: number
   ): OverlappingHierarchyError | void {
     if (child === parent) return new LoopError("Cannot attach node to itself");
