@@ -1,4 +1,4 @@
-import OverlappingHierarchy, {
+import OrderedOverlappingHierarchy, {
   CycleError,
   LoopError,
   TransitiveReductionError,
@@ -9,20 +9,20 @@ const PARENT = "parent";
 const GRANDPARENT = "grandparent";
 
 describe("OverlappingHierarchy", () => {
-  let family: OverlappingHierarchy<string>;
+  let family: OrderedOverlappingHierarchy<string>;
 
   beforeEach(() => {
-    family = new OverlappingHierarchy();
+    family = new OrderedOverlappingHierarchy();
     family.add(GRANDPARENT);
     family.attach(PARENT, GRANDPARENT);
     family.attach(CHILD, PARENT);
   });
 
   describe("new OverlappingHierarchy(source)", () => {
-    let clone: OverlappingHierarchy<string>;
+    let clone: OrderedOverlappingHierarchy<string>;
 
     beforeEach(() => {
-      clone = new OverlappingHierarchy(family);
+      clone = new OrderedOverlappingHierarchy(family);
     });
 
     test("Has the same nodes", () => {
@@ -70,13 +70,13 @@ describe("OverlappingHierarchy", () => {
     });
 
     test("Adds null node", () => {
-      const hierarchy = new OverlappingHierarchy<null>();
+      const hierarchy = new OrderedOverlappingHierarchy<null>();
       hierarchy.add(null);
       expect(hierarchy.nodes()).toStrictEqual(new Set([null]));
     });
 
     test("Adds object node", () => {
-      const hierarchy = new OverlappingHierarchy<object>();
+      const hierarchy = new OrderedOverlappingHierarchy<object>();
       hierarchy.add({});
       expect(hierarchy.nodes()).toStrictEqual(new Set([{}]));
     });
@@ -223,7 +223,7 @@ describe("OverlappingHierarchy", () => {
     });
 
     test("Given 1000 nodes, performs x200 times faster than previous implementation", () => {
-      class OldImplementation<Node> extends OverlappingHierarchy<Node> {
+      class OldImplementation<Node> extends OrderedOverlappingHierarchy<Node> {
         hierarchs = (): Set<Node> =>
           new Set(
             Array.from(this.nodes()).filter((node) => !this.parents(node)?.size)
@@ -231,7 +231,7 @@ describe("OverlappingHierarchy", () => {
       }
 
       const measureDuration = (
-        hierarchy: OverlappingHierarchy<number>
+        hierarchy: OrderedOverlappingHierarchy<number>
       ): number => {
         for (let i = 0; i < 1000; i++) {
           hierarchy.add(i);
@@ -242,7 +242,7 @@ describe("OverlappingHierarchy", () => {
       };
 
       const oldDuration = measureDuration(new OldImplementation<number>());
-      const newDuration = measureDuration(new OverlappingHierarchy<number>());
+      const newDuration = measureDuration(new OrderedOverlappingHierarchy<number>());
 
       expect(newDuration).toBeLessThan(oldDuration / 200);
     });
@@ -324,7 +324,7 @@ describe("OverlappingHierarchy", () => {
     });
 
     test("Removing the only node of the hierarchy empties the hierarchy", () => {
-      const hierarchy = new OverlappingHierarchy<string>();
+      const hierarchy = new OrderedOverlappingHierarchy<string>();
       hierarchy.add("orphan");
       hierarchy.delete("orphan");
       expect(hierarchy.nodes()).toStrictEqual(new Set());

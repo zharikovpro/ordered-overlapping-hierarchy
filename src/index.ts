@@ -1,15 +1,15 @@
-class OverlappingHierarchyError extends Error {
+class OrderedOverlappingHierarchyError extends Error {
   constructor(message: string) {
     super(message);
     this.name = this.constructor.name;
   }
 }
 
-export class LoopError extends OverlappingHierarchyError {}
-export class CycleError extends OverlappingHierarchyError {}
-export class TransitiveReductionError extends OverlappingHierarchyError {} // https://en.wikipedia.org/wiki/Transitive_reduction#In_directed_acyclic_graphs
+export class LoopError extends OrderedOverlappingHierarchyError {}
+export class CycleError extends OrderedOverlappingHierarchyError {}
+export class TransitiveReductionError extends OrderedOverlappingHierarchyError {} // https://en.wikipedia.org/wiki/Transitive_reduction#In_directed_acyclic_graphs
 
-export default class OverlappingHierarchy<Node> {
+export default class OrderedOverlappingHierarchy<Node> {
   #childrenMap: Map<Node, Array<Node>> = new Map();
 
   #intersection = (a: Set<Node>, b: Set<Node>): Set<Node> =>
@@ -18,14 +18,16 @@ export default class OverlappingHierarchy<Node> {
   #filterNodes = (filter: (node: Node) => boolean): Set<Node> =>
     new Set(Array.from(this.nodes()).filter(filter));
 
-  constructor(source?: OverlappingHierarchy<Node>) {
+  constructor(source?: OrderedOverlappingHierarchy<Node>) {
     source?.nodes().forEach((node) => {
       this.#childrenMap.set(node, Array.from(source.children(node) || []));
     });
   }
 
   add(node: Node): void {
-    // todo: use ordered array for hierarchs sorting
+    // todo: make private, public API is attach(node)
+    // todo: should be identical to attach(node)
+    // todo: use ordered array for hierarchs sorting, add test case with ordered hierarchs
     this.#childrenMap.set(node, this.#childrenMap.get(node) || []);
   }
 
@@ -33,7 +35,7 @@ export default class OverlappingHierarchy<Node> {
     child: Node,
     parent: Node,
     index?: number
-  ): OverlappingHierarchyError | void {
+  ): OrderedOverlappingHierarchyError | void {
     if (child === parent) return new LoopError("Cannot attach node to itself");
     if (this.nodes().has(child) && this.descendants(child)?.has(parent))
       return new CycleError("Cannot attach ancestor as a child");
