@@ -16,36 +16,34 @@ export default class OrderedOverlappingHierarchy<Node> {
     new Set([...a].filter((x) => b.has(x)));
 
   #filterNodes = (filter: (node: Node) => boolean): Set<Node> =>
-    new Set(Array.from(this.nodes()).filter(filter));
-
-  constructor(source?: OrderedOverlappingHierarchy<Node>) {
-    source?.nodes().forEach((node) => {
-      this.#childrenMap.set(node, Array.from(source.children(node) || []));
-    });
-  }
+    new Set(Array.from(this.#nodes()).filter(filter));
 
   #hierarchs = (): Set<Node> => {
-    const nodes = this.nodes();
-    this.nodes().forEach((n) =>
+    const nodes = this.#nodes();
+    this.#nodes().forEach((n) =>
       this.children(n)?.forEach((c) => nodes.delete(c))
     );
     return nodes;
   };
 
-  #add(node: Node): void {
-    // todo: use ordered array for hierarchs sorting, add test case with ordered hierarchs
-    this.#childrenMap.set(node, this.#childrenMap.get(node) || []);
+  constructor(source?: OrderedOverlappingHierarchy<Node>) {
+    source?.descendants().forEach((node) => {
+      this.#childrenMap.set(node, Array.from(source.children(node) || []));
+    });
   }
 
-  nodes = (): Set<Node> => new Set(this.#childrenMap.keys());
+  #nodes = (): Set<Node> => new Set(this.#childrenMap.keys());
 
+  // todo: attach(node, { parent })
+  // todo: attach(node, { index })
+  // todo: attach(node, { parent, index })
   attach(
     node: Node,
     parent?: Node,
     index?: number
   ): OrderedOverlappingHierarchyError | void {
     if (node === parent) return new LoopError("Cannot attach node to itself");
-    if (parent && this.nodes().has(node) && this.descendants(node)?.has(parent))
+    if (parent && this.#nodes().has(node) && this.descendants(node)?.has(parent))
       return new CycleError("Cannot attach ancestor as a child");
     if (
       parent &&
@@ -66,9 +64,10 @@ export default class OrderedOverlappingHierarchy<Node> {
         "Cannot attach child whose descendant is a child of the parent"
       );
 
-    this.#add(node);
+    this.#childrenMap.set(node, this.#childrenMap.get(node) || []);
+
     if (parent) {
-      this.#add(parent);
+      this.attach(parent);
       this.detach(parent, node);
       const children = this.#childrenMap.get(parent);
       if (children) {
@@ -78,11 +77,11 @@ export default class OrderedOverlappingHierarchy<Node> {
   }
 
   children(): Array<Node>;
-  children(parent: Node): Array<Node> | undefined;
-  children(parent?: Node): Array<Node> | undefined {
-    if (parent) {
-      return this.#childrenMap.has(parent)
-        ? Array.from(this.#childrenMap.get(parent) as Array<Node>)
+  children(node: Node): Array<Node> | undefined;
+  children(node?: Node): Array<Node> | undefined {
+    if (node) {
+      return this.#childrenMap.has(node)
+        ? Array.from(this.#childrenMap.get(node) as Array<Node>)
         : undefined;
     } else {
       return Array.from(this.#hierarchs());
@@ -90,12 +89,12 @@ export default class OrderedOverlappingHierarchy<Node> {
   }
 
   descendants(): Set<Node>;
-  descendants(ancestor: Node): Set<Node> | undefined;
-  descendants(ancestor?: Node): Set<Node> | undefined {
-    if (!ancestor) return this.nodes();
-    if (!this.#childrenMap.has(ancestor)) return undefined;
+  descendants(node: Node): Set<Node> | undefined;
+  descendants(node?: Node): Set<Node> | undefined {
+    if (!node) return this.#nodes();
+    if (!this.#childrenMap.has(node)) return undefined;
 
-    const children = new Set(this.children(ancestor));
+    const children = new Set(this.children(node));
     const childrenDescendants = Array.from(children).flatMap((child) =>
       Array.from(this.descendants(child) || [])
     );
@@ -103,24 +102,25 @@ export default class OrderedOverlappingHierarchy<Node> {
     return new Set([...children, ...childrenDescendants]);
   }
 
-  ancestors = (descendant: Node): Set<Node> | undefined =>
-    this.#childrenMap.has(descendant)
-      ? this.#filterNodes((n) => !!this.descendants(n)?.has(descendant))
+  ancestors = (node: Node): Set<Node> | undefined =>
+    this.#childrenMap.has(node)
+      ? this.#filterNodes((n) => !!this.descendants(n)?.has(node))
       : undefined;
 
-  parents = (child: Node): Set<Node> | undefined =>
-    this.#childrenMap.has(child)
-      ? this.#filterNodes((n) => !!this.children(n)?.includes(child))
+  parents = (node: Node): Set<Node> | undefined =>
+    this.#childrenMap.has(node)
+      ? this.#filterNodes((n) => !!this.children(n)?.includes(node))
       : undefined;
 
-  detach = (parent: Node, child: Node): void =>
+  // todo: first arg is note as in other methods
+  detach = (parent: Node, node: Node): void =>
     this.#childrenMap.set(
       parent,
-      (this.#childrenMap.get(parent) || []).filter((val) => val !== child)
+      (this.#childrenMap.get(parent) || []).filter((val) => val !== node)
     ) as unknown as void;
 
   delete(node: Node): void {
     this.#childrenMap.delete(node);
-    this.nodes().forEach((parent) => this.detach(parent, node));
+    this.#nodes().forEach((parent) => this.detach(parent, node));
   }
 }
