@@ -76,6 +76,8 @@ hierarchy.attach('D', 'A') // CycleError: Cannot add ancestor as a child
 
 ### TransitiveReductionError
 
+https://en.wikipedia.org/wiki/Transitive_reduction#In_directed_acyclic_graphs
+
 ```typescript
 hierarchy.attach('A', 'D') // TransitiveReductionError: Cannot attach non-child descendant as a child
 hierarchy.attach('A', 'B') // TransitiveReductionError: Cannot attach child whose descendant is a child of the parent
