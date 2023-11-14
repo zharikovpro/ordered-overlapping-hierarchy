@@ -33,8 +33,6 @@ export default class OrderedOverlappingHierarchy<Node> {
   };
 
   #add(node: Node): void {
-    // todo: make private, public API is attach(node)
-    // todo: should be identical to attach(node)
     // todo: use ordered array for hierarchs sorting, add test case with ordered hierarchs
     this.#childrenMap.set(node, this.#childrenMap.get(node) || []);
   }
