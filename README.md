@@ -50,12 +50,12 @@ hierarchy.attach('H', 'J')
 
 ### Traversal
 
-`hierarchy.nodes()`
-
-`hierarchy.children(parent?)`
+`hierarchy.children() // hierarchs`
+`hierarchy.children(parent)`
 
 `hierarchy.parents(child)`
 
+`hierarchy.descendants() // nodes`
 `hierarchy.descendants(ancestor)`
 
 `hierarchy.ancestors(descendant)`

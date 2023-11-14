@@ -24,6 +24,16 @@ export default class OrderedOverlappingHierarchy<Node> {
     });
   }
 
+  #hierarchs = (): Set<Node> => {
+    const nodes = this.nodes();
+    this.nodes().forEach((n) =>
+        this.children(n)?.forEach((c) => nodes.delete(c))
+    );
+    return nodes;
+  };
+
+  nodes = (): Set<Node> => new Set(this.#childrenMap.keys());
+
   add(node: Node): void {
     // todo: make private, public API is attach(node)
     // todo: should be identical to attach(node)
@@ -67,27 +77,22 @@ export default class OrderedOverlappingHierarchy<Node> {
     }
   }
 
+  children(): Array<Node>;
+  children(parent: Node): Array<Node> | undefined;
   children(parent?: Node): Array<Node> | undefined {
     if (parent) {
       return this.#childrenMap.has(parent)
           ? Array.from(this.#childrenMap.get(parent) as Array<Node>)
           : undefined;
     } else {
-      return  Array.from(this.hierarchs())
+      return  Array.from(this.#hierarchs())
     }
   }
 
-  nodes = (): Set<Node> => new Set(this.#childrenMap.keys());
-
-  hierarchs = (): Set<Node> => {
-    const nodes = this.nodes();
-    this.nodes().forEach((n) =>
-      this.children(n)?.forEach((c) => nodes.delete(c))
-    );
-    return nodes;
-  };
-
-  descendants(ancestor: Node): Set<Node> | undefined {
+  descendants(): Set<Node>;
+  descendants(ancestor: Node): Set<Node> | undefined;
+  descendants(ancestor?: Node): Set<Node> | undefined {
+    if (!ancestor) return this.nodes();
     if (!this.#childrenMap.has(ancestor)) return undefined;
 
     const children = new Set(this.children(ancestor));

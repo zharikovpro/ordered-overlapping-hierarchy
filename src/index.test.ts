@@ -228,11 +228,15 @@ describe("OverlappingHierarchy", () => {
   });
 
   describe(".descendants()", () => {
-    test("Returns undefined for non-member", () => {
+    test("When ancestor is missing, returns undefined", () => {
       expect(family.descendants("missing")).toBeUndefined();
     });
 
-    test("Returns descendants", () => {
+    test("When ancestor is undefined, returns all nodes", () => {
+      expect(family.descendants()).toEqual(family.nodes()) // todo: deprecate nodes in favor of this
+    });
+
+    test("Returns descendants for the ancestor", () => {
       expect(family.descendants(GRANDPARENT)).toStrictEqual(
         new Set([PARENT, CHILD])
       );
