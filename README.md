@@ -40,9 +40,9 @@ hierarchy.attach('H', 'J')
 
 ### Mutation
 
-`hierarchy.add(node)`
-
-`hierarchy.attach(parent, child, index?)`
+`hierarchy.attach(node) // hierarch`
+`hierarchy.attach(node, parent) // child`
+`hierarchy.attach(node, parent, index) // child at index`
 
 `hierarchy.detach(parent, child)`
 
