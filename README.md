@@ -52,9 +52,7 @@ hierarchy.attach('H', 'J')
 
 `hierarchy.nodes()`
 
-`hierarchy.hierarchs()`
-
-`hierarchy.children(parent)`
+`hierarchy.children(parent?)`
 
 `hierarchy.parents(child)`
 
