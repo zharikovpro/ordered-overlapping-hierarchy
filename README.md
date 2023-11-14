@@ -53,10 +53,10 @@ hierarchy.attach('H', 'J')
 `hierarchy.children() // hierarchs`
 `hierarchy.children(parent)`
 
-`hierarchy.parents(child)`
-
-`hierarchy.descendants() // nodes`
+`hierarchy.descendants() // all nodes`
 `hierarchy.descendants(ancestor)`
+
+`hierarchy.parents(child)`
 
 `hierarchy.ancestors(descendant)`
 
