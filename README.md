@@ -44,21 +44,21 @@ hierarchy.attach('H', 'J')
 `hierarchy.attach(node, parent) // child`
 `hierarchy.attach(node, parent, index) // child at index`
 
-`hierarchy.detach(parent, child)`
+`hierarchy.detach(node, parent)`
 
 `hierarchy.delete(node)`
 
 ### Traversal
 
 `hierarchy.children() // hierarchs`
-`hierarchy.children(parent)`
+`hierarchy.children(node)`
 
 `hierarchy.descendants() // all nodes`
-`hierarchy.descendants(ancestor)`
+`hierarchy.descendants(node)`
 
-`hierarchy.parents(child)`
+`hierarchy.parents(node)`
 
-`hierarchy.ancestors(descendant)`
+`hierarchy.ancestors(node)`
 
 ### Errors
 

@@ -42,8 +42,13 @@ export default class OrderedOverlappingHierarchy<Node> {
     parent?: Node,
     index?: number
   ): OrderedOverlappingHierarchyError | void {
+    // todo: index without parent is not supported for nodes with parents - InvalidArgumentsError
     if (node === parent) return new LoopError("Cannot attach node to itself");
-    if (parent && this.#nodes().has(node) && this.descendants(node)?.has(parent))
+    if (
+      parent &&
+      this.#nodes().has(node) &&
+      this.descendants(node)?.has(parent)
+    )
       return new CycleError("Cannot attach ancestor as a child");
     if (
       parent &&
@@ -68,7 +73,7 @@ export default class OrderedOverlappingHierarchy<Node> {
 
     if (parent) {
       this.attach(parent);
-      this.detach(parent, node);
+      this.detach(node, parent);
       const children = this.#childrenMap.get(parent);
       if (children) {
         children.splice(index ?? children.length, 0, node);
@@ -112,8 +117,7 @@ export default class OrderedOverlappingHierarchy<Node> {
       ? this.#filterNodes((n) => !!this.children(n)?.includes(node))
       : undefined;
 
-  // todo: first arg is note as in other methods
-  detach = (parent: Node, node: Node): void =>
+  detach = (node: Node, parent: Node): void =>
     this.#childrenMap.set(
       parent,
       (this.#childrenMap.get(parent) || []).filter((val) => val !== node)
@@ -121,6 +125,6 @@ export default class OrderedOverlappingHierarchy<Node> {
 
   delete(node: Node): void {
     this.#childrenMap.delete(node);
-    this.#nodes().forEach((parent) => this.detach(parent, node));
+    this.#nodes().forEach((parent) => this.detach(node, parent));
   }
 }
