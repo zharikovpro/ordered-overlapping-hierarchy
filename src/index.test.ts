@@ -99,8 +99,9 @@ describe("OverlappingHierarchy", () => {
     });
 
     test("Adds string node", () => {
-      family.attach("relative");
-      expect(family.descendants().has("relative")).toStrictEqual(true);
+      const hierarchy = new OrderedOverlappingHierarchy<string>();
+      hierarchy.attach("relative");
+      expect(hierarchy.descendants()).toStrictEqual(new Set(["relative"]));
     });
 
     test("Adds null node", () => {
@@ -151,6 +152,11 @@ describe("OverlappingHierarchy", () => {
       expect(family.parents(GRANDPARENT)).toStrictEqual(
         new Set([GREAT_GRANDPARENT])
       );
+    });
+
+    test("Attaching node to undefined parent removes parents", () => {
+      family.attach(CHILD);
+      expect(family.parents(CHILD)).toStrictEqual(new Set([]));
     });
 
     describe("Ordering", () => {
@@ -208,6 +214,16 @@ describe("OverlappingHierarchy", () => {
         family.attach("LAST", PARENT, 100);
         expect(family.children(PARENT)).toStrictEqual([CHILD, "LAST"]);
       });
+
+      test("New hierarch is attached at the end of the top level list by default", () => {
+        family.attach("HIERARCH");
+        expect(family.children()).toStrictEqual([GRANDPARENT, "HIERARCH"]);
+      });
+
+      test("Zero index attaches hierarch at the beginning of the top level list", () => {
+        family.attach("HIERARCH", undefined, 0);
+        expect(family.children()).toStrictEqual(["HIERARCH", GRANDPARENT]);
+      });
     });
   });
 
@@ -257,7 +273,7 @@ describe("OverlappingHierarchy", () => {
 
   describe(".detach()", () => {
     test("Parent no longer has detached child", () => {
-      family.detach( CHILD, PARENT);
+      family.detach(CHILD, PARENT);
       expect(family.children(PARENT)?.includes(CHILD)).toStrictEqual(false);
     });
 
