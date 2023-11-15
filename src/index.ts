@@ -51,32 +51,27 @@ export default class OrderedOverlappingHierarchy<Node> {
     parent?: Node,
     index?: number
   ): OrderedOverlappingHierarchyError | void {
-    // todo: index without parent is not supported for nodes with parents - InvalidArgumentsError
     if (node === parent) return new LoopError("Cannot attach node to itself");
-    if (
-      parent &&
-      this.#nodes().has(node) &&
-      this.descendants(node)?.has(parent)
-    )
-      return new CycleError("Cannot attach ancestor as a child");
-    if (
-      parent &&
-      !this.children(parent)?.includes(node) &&
-      this.descendants(parent)?.has(node)
-    )
-      return new TransitiveReductionError(
-        "Cannot attach non-child descendant as a child"
-      );
-    if (
-      parent &&
-      this.#intersection(
-        new Set(this.descendants(node)),
-        new Set(this.children(parent))
-      ).size > 0
-    )
-      return new TransitiveReductionError(
-        "Cannot attach child whose descendant is a child of the parent"
-      );
+    if (parent) {
+      if (this.#nodes().has(node) && this.descendants(node)?.has(parent))
+        return new CycleError("Cannot attach ancestor as a child");
+      if (
+        !this.children(parent)?.includes(node) &&
+        this.descendants(parent)?.has(node)
+      )
+        return new TransitiveReductionError(
+          "Cannot attach non-child descendant as a child"
+        );
+      if (
+        this.#intersection(
+          new Set(this.descendants(node)),
+          new Set(this.children(parent))
+        ).size > 0
+      )
+        return new TransitiveReductionError(
+          "Cannot attach child whose descendant is a child of the parent"
+        );
+    }
 
     this.#add(node);
 
@@ -88,7 +83,7 @@ export default class OrderedOverlappingHierarchy<Node> {
     }
 
     const container = parent
-      ? this.#childrenMap.get(parent) || []
+      ? (this.#childrenMap.get(parent) as Node[])
       : this.#hierarchs;
     this.#position(container, node, index);
   }
@@ -97,9 +92,8 @@ export default class OrderedOverlappingHierarchy<Node> {
   children(node: Node): Array<Node> | undefined;
   children(node?: Node): Array<Node> | undefined {
     if (node) {
-      return this.#childrenMap.has(node)
-        ? Array.from(this.#childrenMap.get(node) as Array<Node>)
-        : undefined;
+      const children = this.#childrenMap.get(node);
+      return children ? Array.from(children) : undefined;
     } else {
       return Array.from(this.#hierarchs);
     }
@@ -113,7 +107,7 @@ export default class OrderedOverlappingHierarchy<Node> {
 
     const children = new Set(this.children(node));
     const childrenDescendants = Array.from(children).flatMap((child) =>
-      Array.from(this.descendants(child) || [])
+      Array.from(this.descendants(child) as Set<Node>)
     );
 
     return new Set([...children, ...childrenDescendants]);
@@ -132,7 +126,7 @@ export default class OrderedOverlappingHierarchy<Node> {
   detach = (node: Node, parent: Node): void =>
     this.#childrenMap.set(
       parent,
-      (this.#childrenMap.get(parent) || []).filter((val) => val !== node)
+      (this.#childrenMap.get(parent) || []).filter((item) => item !== node)
     ) as unknown as void;
 
   delete(node: Node): void {
