@@ -159,6 +159,14 @@ describe("OverlappingHierarchy", () => {
       expect(family.parents(CHILD)).toStrictEqual(new Set([]));
     });
 
+    test("Attaching node to parent removes it from hierarchs", () => {
+      const hierarchy = new OrderedOverlappingHierarchy<string>();
+      hierarchy.attach('A')
+      hierarchy.attach('B')
+      hierarchy.attach('B', 'A')
+      expect(hierarchy.children()).toStrictEqual(['A']);
+    })
+
     describe("Ordering", () => {
       test("New child is attached at the end of the children list by default", () => {
         family.attach("YOUNGER_CHILD", PARENT);

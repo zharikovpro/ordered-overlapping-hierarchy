@@ -78,6 +78,7 @@ export default class OrderedOverlappingHierarchy<Node> {
     if (parent) {
       this.#add(parent);
       this.detach(node, parent);
+      this.#hierarchs = this.#hierarchs.filter((n) => n !== node);
     } else {
       this.parents(node)?.forEach((parent) => this.detach(node, parent));
     }
