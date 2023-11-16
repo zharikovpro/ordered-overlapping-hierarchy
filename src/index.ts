@@ -43,6 +43,10 @@ export default class OrderedOverlappingHierarchy<Node> {
     array.splice(index ?? array.length, 0, node);
   };
 
+  #removeHierarch = (node: Node): void => {
+    this.#hierarchs = this.#hierarchs.filter((n) => n !== node);
+  };
+
   // todo: attach(node, { parent })
   // todo: attach(node, { index })
   // todo: attach(node, { parent, index })
@@ -78,7 +82,7 @@ export default class OrderedOverlappingHierarchy<Node> {
     if (parent) {
       this.#add(parent);
       this.detach(node, parent);
-      this.#hierarchs = this.#hierarchs.filter((n) => n !== node);
+      this.#removeHierarch(node);
     } else {
       this.parents(node)?.forEach((parent) => this.detach(node, parent));
     }
@@ -124,14 +128,20 @@ export default class OrderedOverlappingHierarchy<Node> {
       ? this.#filterNodes((n) => !!this.children(n)?.includes(node))
       : undefined;
 
-  detach = (node: Node, parent: Node): void =>
+  detach(node: Node, parent: Node): void {
     this.#childrenMap.set(
-      parent,
-      (this.#childrenMap.get(parent) || []).filter((item) => item !== node)
-    ) as unknown as void;
+        parent,
+        (this.#childrenMap.get(parent) || []).filter((item) => item !== node)
+    );
+
+    if (this.parents(node)?.size === 0) {
+      this.#hierarchs.push(node);
+    }
+  }
 
   delete(node: Node): void {
     this.#childrenMap.delete(node);
+    this.#removeHierarch(node);
     this.#nodes().forEach((parent) => this.detach(node, parent));
   }
 }

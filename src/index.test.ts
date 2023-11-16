@@ -296,9 +296,19 @@ describe("OverlappingHierarchy", () => {
       family.detach(CHILD, PARENT);
       expect(family.descendants().has(CHILD)).toStrictEqual(true);
     });
+
+    test("Child detached from the only parent becomes an hierarch", () => {
+      family.detach(CHILD, PARENT);
+      expect(family.children()).toContain(CHILD);
+    });
   });
 
   describe(".delete()", function () {
+    test ("Hierarchy no longer has this hierarch", () => {
+      family.delete(GRANDPARENT);
+      expect(family.children()).not.toContain(GRANDPARENT);
+    })
+
     test("Detaches all children from the parent", () => {
       family.delete(PARENT);
       expect(family.parents(CHILD)).toEqual(new Set([]));
