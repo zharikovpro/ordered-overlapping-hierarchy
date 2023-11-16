@@ -8,7 +8,7 @@ const CHILD = "child";
 const PARENT = "parent";
 const GRANDPARENT = "grandparent";
 
-describe("OverlappingHierarchy", () => {
+describe("OrderedOverlappingHierarchy", () => {
   let family: OrderedOverlappingHierarchy<string>;
 
   beforeEach(() => {
@@ -161,11 +161,11 @@ describe("OverlappingHierarchy", () => {
 
     test("Attaching node to parent removes it from hierarchs", () => {
       const hierarchy = new OrderedOverlappingHierarchy<string>();
-      hierarchy.attach('A')
-      hierarchy.attach('B')
-      hierarchy.attach('B', 'A')
-      expect(hierarchy.children()).toStrictEqual(['A']);
-    })
+      hierarchy.attach("A");
+      hierarchy.attach("B");
+      hierarchy.attach("B", "A");
+      expect(hierarchy.children()).toStrictEqual(["A"]);
+    });
 
     describe("Ordering", () => {
       test("New child is attached at the end of the children list by default", () => {
@@ -304,10 +304,10 @@ describe("OverlappingHierarchy", () => {
   });
 
   describe(".delete()", function () {
-    test ("Hierarchy no longer has this hierarch", () => {
+    test("Hierarchy no longer has this hierarch", () => {
       family.delete(GRANDPARENT);
       expect(family.children()).not.toContain(GRANDPARENT);
-    })
+    });
 
     test("Detaches all children from the parent", () => {
       family.delete(PARENT);

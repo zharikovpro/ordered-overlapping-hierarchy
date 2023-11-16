@@ -19,14 +19,6 @@ export default class OrderedOverlappingHierarchy<Node> {
   #filterNodes = (filter: (node: Node) => boolean): Set<Node> =>
     new Set(Array.from(this.#nodes()).filter(filter));
 
-  // #hierarchs = (): Set<Node> => {
-  //   const nodes = this.#nodes();
-  //   this.#nodes().forEach((n) =>
-  //     this.children(n)?.forEach((c) => nodes.delete(c))
-  //   );
-  //   return nodes;
-  // };
-
   constructor(source?: OrderedOverlappingHierarchy<Node>) {
     source?.descendants().forEach((node) => {
       this.#childrenMap.set(node, Array.from(source.children(node) || []));
@@ -130,8 +122,8 @@ export default class OrderedOverlappingHierarchy<Node> {
 
   detach(node: Node, parent: Node): void {
     this.#childrenMap.set(
-        parent,
-        (this.#childrenMap.get(parent) || []).filter((item) => item !== node)
+      parent,
+      (this.#childrenMap.get(parent) || []).filter((item) => item !== node)
     );
 
     if (this.parents(node)?.size === 0) {
