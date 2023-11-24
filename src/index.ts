@@ -28,7 +28,7 @@ export default class OrderedOverlappingHierarchy<Node> {
   #nodes = (): Set<Node> => new Set(this.#childrenMap.keys());
 
   #add = (node: Node): void => {
-    this.#childrenMap.set(node, this.#childrenMap.get(node) || []);
+    this.#childrenMap.set(node, this.children(node) || []);
   };
 
   #position = (array: Array<Node>, node: Node, index?: number): void => {
@@ -102,8 +102,8 @@ export default class OrderedOverlappingHierarchy<Node> {
     if (!node) return this.#nodes();
     if (!this.#childrenMap.has(node)) return undefined;
 
-    const children = new Set(this.children(node));
-    const childrenDescendants = Array.from(children).flatMap((child) =>
+    const children = this.children(node) || [];
+    const childrenDescendants = children.flatMap((child) =>
       Array.from(this.descendants(child) as Set<Node>)
     );
 
@@ -123,7 +123,7 @@ export default class OrderedOverlappingHierarchy<Node> {
   detach(node: Node, parent: Node): void {
     this.#childrenMap.set(
       parent,
-      (this.#childrenMap.get(parent) || []).filter((item) => item !== node)
+      this.children(parent)?.filter((item) => item !== node) || []
     );
 
     if (this.parents(node)?.size === 0) {
