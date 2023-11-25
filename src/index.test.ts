@@ -102,14 +102,14 @@ describe("OrderedOverlappingHierarchy", () => {
       );
     });
 
-    test("Attaching child to sibling returns TransitiveReductionError", () => {
+    test("Attaching to sibling returns TransitiveReductionError", () => {
       family.attach("child2", PARENT);
       expect(family.attach(CHILD, "child2")).toStrictEqual(
         new TransitiveReductionError(`Cannot attach to parents descendants`)
       );
     });
 
-    test("Attaching child to nibling returns TransitiveReductionError", () => {
+    test("Attaching to nibling returns TransitiveReductionError", () => {
       family.attach("child2", PARENT);
       family.attach("nibling", "child2");
       expect(family.attach(CHILD, "nibling")).toStrictEqual(

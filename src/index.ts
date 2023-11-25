@@ -52,6 +52,7 @@ export default class OrderedOverlappingHierarchy<Node> {
   ): OrderedOverlappingHierarchyError | void {
     if (node === parent) return new LoopError("Cannot attach node to itself");
     if (parent) {
+      // todo: refactor to iteration over #attachmentValidators array of (node, parent) => OrderedOverlappingHierarchyError | void functions
       if (this.#nodes().has(node) && this.descendants(node)?.has(parent))
         return new CycleError("Cannot attach ancestor as a child");
       if (
