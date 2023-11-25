@@ -10,7 +10,7 @@ export class CycleError extends OrderedOverlappingHierarchyError {}
 export class TransitiveReductionError extends OrderedOverlappingHierarchyError {} // https://en.wikipedia.org/wiki/Transitive_reduction#In_directed_acyclic_graphs
 
 export default class OrderedOverlappingHierarchy<Node> {
-  #hierarchs: Array<Node> = [];
+  #hierarchs: Array<Node> = []; // todo: model as childrenMap for root parent instead? simplifies the code with recursion, etc; consistent graph model similar to a tree with root node; no non-root vertices without edges
   #childrenMap: Map<Node, Array<Node>> = new Map();
 
   #intersection = (a: Set<Node>, b: Set<Node>): Set<Node> =>
@@ -42,44 +42,64 @@ export default class OrderedOverlappingHierarchy<Node> {
     this.#hierarchs = this.#hierarchs.filter((n) => n !== node);
   };
 
+  #validateNewParent = (
+    node: Node,
+    parent: Node
+  ): OrderedOverlappingHierarchyError | void => {
+    const validators: [Function, OrderedOverlappingHierarchyError][] = [
+      [
+        (n: Node, p: Node) => n === p,
+        new LoopError("Cannot attach node to itself"),
+      ],
+      [
+        (n: Node, p: Node) =>
+          this.#nodes().has(n) && this.descendants(node)?.has(p),
+        new CycleError("Cannot attach ancestor as a child"),
+      ],
+      [
+        (n: Node, p: Node) =>
+          p && !this.children(p)?.includes(n) && this.descendants(p)?.has(n),
+        new TransitiveReductionError(
+          "Cannot attach non-child descendant as a child"
+        ),
+      ],
+      [
+        (n: Node, p: Node) =>
+          this.#intersection(
+            new Set(this.descendants(n)),
+            new Set(this.children(p))
+          ).size > 0,
+        new TransitiveReductionError(
+          "Cannot attach child whose descendant is a child of the parent"
+        ),
+      ],
+      [
+        (n: Node, p: Node) =>
+          this.#intersection(
+            new Set(this.parents(n)),
+            new Set(this.ancestors(p))
+          ).size > 0,
+        new TransitiveReductionError("Cannot attach to parents descendants"),
+      ],
+    ];
+
+    const failure = validators.find(([condition]) => condition(node, parent));
+    return failure ? failure[1] : undefined;
+  };
+
   // todo: attach(node, { parent })
   // todo: attach(node, { index })
   // todo: attach(node, { parent, index })
+
   attach(
     node: Node,
     parent?: Node,
     index?: number
   ): OrderedOverlappingHierarchyError | void {
-    if (node === parent) return new LoopError("Cannot attach node to itself");
     if (parent) {
-      // todo: refactor to iteration over #attachmentValidators array of (node, parent) => OrderedOverlappingHierarchyError | void functions
-      if (this.#nodes().has(node) && this.descendants(node)?.has(parent))
-        return new CycleError("Cannot attach ancestor as a child");
-      if (
-        !this.children(parent)?.includes(node) &&
-        this.descendants(parent)?.has(node)
-      )
-        return new TransitiveReductionError(
-          "Cannot attach non-child descendant as a child"
-        );
-      if (
-        this.#intersection(
-          new Set(this.descendants(node)),
-          new Set(this.children(parent))
-        ).size > 0
-      )
-        return new TransitiveReductionError(
-          "Cannot attach child whose descendant is a child of the parent"
-        );
-      if (
-        this.#intersection(
-          new Set(this.parents(node)),
-          new Set(this.ancestors(parent))
-        ).size > 0
-      ) {
-        return new TransitiveReductionError(
-          "Cannot attach to parents descendants"
-        );
+      const error = this.#validateNewParent(node, parent);
+      if (error) {
+        return error;
       }
     }
 
@@ -102,6 +122,7 @@ export default class OrderedOverlappingHierarchy<Node> {
   children(): Array<Node>;
   children(node: Node): Array<Node> | undefined;
   children(node?: Node): Array<Node> | undefined {
+    // todo: simplify with root node? there will be no conditional
     if (node) {
       const children = this.#childrenMap.get(node);
       return children ? Array.from(children) : undefined;

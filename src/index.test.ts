@@ -173,6 +173,7 @@ describe("OrderedOverlappingHierarchy", () => {
       );
     });
 
+    // todo: consider always having a root node and throwing TransitiveReductionError instead for consistency
     test("Attaching node to undefined parent removes parents", () => {
       family.attach(CHILD);
       expect(family.parents(CHILD)).toStrictEqual(new Set([]));
@@ -311,6 +312,7 @@ describe("OrderedOverlappingHierarchy", () => {
       expect(family.children("parent2")?.includes(CHILD)).toStrictEqual(true);
     });
 
+    // todo: replace with no longer belongs to the hierarchy
     test("Child detached from the only parent still belongs to the hierarchy", () => {
       family.detach(CHILD, PARENT);
       expect(family.descendants().has(CHILD)).toStrictEqual(true);
