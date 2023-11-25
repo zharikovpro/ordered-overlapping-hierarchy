@@ -70,6 +70,16 @@ export default class OrderedOverlappingHierarchy<Node> {
         return new TransitiveReductionError(
           "Cannot attach child whose descendant is a child of the parent"
         );
+      if (
+        this.#intersection(
+          new Set(this.parents(node)),
+          new Set(this.ancestors(parent))
+        ).size > 0
+      ) {
+        return new TransitiveReductionError(
+          "Cannot attach to parents descendants"
+        );
+      }
     }
 
     this.#add(node);

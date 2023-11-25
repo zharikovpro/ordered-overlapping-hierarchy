@@ -102,6 +102,21 @@ describe("OrderedOverlappingHierarchy", () => {
       );
     });
 
+    test("Attaching child to sibling returns TransitiveReductionError", () => {
+      family.attach("child2", PARENT);
+      expect(family.attach(CHILD, "child2")).toStrictEqual(
+        new TransitiveReductionError(`Cannot attach to parents descendants`)
+      );
+    });
+
+    test("Attaching child to nibling returns TransitiveReductionError", () => {
+      family.attach("child2", PARENT);
+      family.attach("nibling", "child2");
+      expect(family.attach(CHILD, "nibling")).toStrictEqual(
+        new TransitiveReductionError(`Cannot attach to parents descendants`)
+      );
+    });
+
     test("Adds string node", () => {
       const hierarchy = new OrderedOverlappingHierarchy<string>();
       hierarchy.attach("relative");
