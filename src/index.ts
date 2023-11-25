@@ -21,7 +21,7 @@ export default class OrderedOverlappingHierarchy<Node> {
 
   constructor(source?: OrderedOverlappingHierarchy<Node>) {
     if (source) {
-      this.#hierarchs = source.children()
+      this.#hierarchs = source.children();
       source.descendants().forEach((node) => {
         this.#childrenMap.set(node, Array.from(source.children(node) || []));
       });
