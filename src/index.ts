@@ -20,9 +20,12 @@ export default class OrderedOverlappingHierarchy<Node> {
     new Set(Array.from(this.#nodes()).filter(filter));
 
   constructor(source?: OrderedOverlappingHierarchy<Node>) {
-    source?.descendants().forEach((node) => {
-      this.#childrenMap.set(node, Array.from(source.children(node) || []));
-    });
+    if (source) {
+      this.#hierarchs = source.children()
+      source.descendants().forEach((node) => {
+        this.#childrenMap.set(node, Array.from(source.children(node) || []));
+      });
+    }
   }
 
   #nodes = (): Set<Node> => new Set(this.#childrenMap.keys());

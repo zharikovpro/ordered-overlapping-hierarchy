@@ -25,6 +25,10 @@ describe("OrderedOverlappingHierarchy", () => {
       clone = new OrderedOverlappingHierarchy(family);
     });
 
+    test("Has the same hierarchs", () => {
+      expect(clone.children()).toStrictEqual(family.children());
+    });
+
     test("Has the same nodes", () => {
       expect(clone.descendants()).toStrictEqual(family.descendants());
     });
