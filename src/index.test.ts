@@ -102,14 +102,14 @@ describe("OrderedOverlappingHierarchy", () => {
       );
     });
 
-    test("Attaching to sibling returns TransitiveReductionError", () => {
+    test("Attaching sibling returns TransitiveReductionError", () => {
       family.attach("child2", PARENT);
       expect(family.attach(CHILD, "child2")).toStrictEqual(
         new TransitiveReductionError(`Cannot attach to parents descendants`)
       );
     });
 
-    test("Attaching to nibling returns TransitiveReductionError", () => {
+    test("Attaching nibling returns TransitiveReductionError", () => {
       family.attach("child2", PARENT);
       family.attach("nibling", "child2");
       expect(family.attach(CHILD, "nibling")).toStrictEqual(
@@ -173,7 +173,7 @@ describe("OrderedOverlappingHierarchy", () => {
       );
     });
 
-    // todo: consider always having a root node and throwing TransitiveReductionError instead for consistency
+    // todo: attaching descendant to root throws TransitiveReductionError
     test("Attaching node to undefined parent removes parents", () => {
       family.attach(CHILD);
       expect(family.parents(CHILD)).toStrictEqual(new Set([]));
@@ -312,7 +312,6 @@ describe("OrderedOverlappingHierarchy", () => {
       expect(family.children("parent2")?.includes(CHILD)).toStrictEqual(true);
     });
 
-    // todo: replace with no longer belongs to the hierarchy
     test("Child detached from the only parent still belongs to the hierarchy", () => {
       family.detach(CHILD, PARENT);
       expect(family.descendants().has(CHILD)).toStrictEqual(true);
