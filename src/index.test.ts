@@ -118,6 +118,40 @@ describe("OrderedOverlappingHierarchy", () => {
         );
       });
 
+      // TODO: handle this complex case and check others
+      // TODO: alternative: automatically remove extra edges
+      // for edge {a,b} of edges() do
+      //   if there is a path from a to b that does not use edge {a,b} then remove edge {a,b}
+      // end for
+      // TODO: https://brunoscheufler.com/blog/2021-12-05-decreasing-graph-complexity-with-transitive-reductions
+      // https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.dag.transitive_reduction.html#
+      // https://networkx.org/documentation/stable/_modules/networkx/algorithms/dag.html#transitive_reduction
+      // https://stackoverflow.com/questions/1690953/transitive-reduction-algorithm-pseudocode
+      // https://bjpcjp.github.io/pdfs/math/transitive-closure-ADM.pdf
+      // Implementations: The Boost implementation of transitive closure appears particularly well engineered, and relies on algorithms from [Nuu95]. LEDA (see Section 19.1.1 (page 658)) provides implementations of both transitive closure and reduction in C++ [MN99]
+      // https://www.boost.org/doc/libs/1_46_1/boost/graph/transitive_reduction.hpp
+      // https://vivekseth.com/transitive-reduction/
+      // https://www.semanticscholar.org/paper/The-Transitive-Reduction-of-a-Directed-Graph-Aho-Garey/d0be1e20643e7e15bd4669f1c3ef0c2287852566?p2df
+      // https://github.com/jafingerhut/cljol/blob/master/doc/transitive-reduction-notes.md#computing-the-transitive-reduction-of-a-dag
+      // https://epubs.siam.org/doi/10.1137/0201008
+      test("When attaching ...", () => {
+        const hierarchy = new OrderedOverlappingHierarchy<string>()
+        // A -> B & X
+        // C -> X
+        // B -> C => transitive reduction
+        hierarchy.attach("A");
+        hierarchy.attach("B");
+        hierarchy.attach("C");
+        hierarchy.attach("X");
+        hierarchy.attach("B", "A");
+        hierarchy.attach("X", "A");
+        hierarchy.attach("X", "C");
+
+        expect(() => hierarchy.attach("C", "B")).toStrictEqual(
+            new TransitiveReductionError(`Cannot attach ...`)
+        );
+      });
+
       // TODO: attaching descendant to root throws TransitiveReductionError
     })
 
