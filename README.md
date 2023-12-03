@@ -5,14 +5,14 @@ Library for modeling [overlapping hierarchy](https://en.wikipedia.org/wiki/Hiera
 Equivalent of [transitively reduced](https://en.wikipedia.org/wiki/Transitive_reduction#In_directed_acyclic_graphs) [weighted](https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)#Weighted_graph) [directed acyclic graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph), in which edges represent parenthood and their weights represent order.
 
 ```mermaid
-graph TD
-  Grandfather((👴)) & Grandmother((👵)) & University[🏫] --> Father((👨))
-  Mother((👩)) & Father(👨‍🏫) --> Daughter(👧) & Son((👦))
-  Daughter((👧)) --> Hamster((🐹))
-  Daughter((👧)) & Son((👦)) --> Game{🎮}
-  Son((👦)) --> Car{🏎️} & Train{🚂}
-  Cat((🐈))
-  Dog((🐕))
+graph TD;
+  Grandfather((👴)) & Grandmother((👵)) & University[🏫] --> Father((👨));
+  Mother((👩)) & Father(👨‍🏫) --> Daughter(👧) & Son((👦));
+  Daughter((👧)) --> Hamster((🐹));
+  Daughter((👧)) & Son((👦)) --> Game{🎮};
+  Son((👦)) --> Car{🏎️} & Train{🚂};
+  Cat((🐈));
+  Dog((🐕));
 ```
 
 ## Example
