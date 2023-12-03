@@ -84,38 +84,42 @@ describe("OrderedOverlappingHierarchy", () => {
       );
     });
 
-    test("Attaching non-child descendant as a child returns TransitiveReductionError", () => {
-      expect(family.attach(CHILD, GRANDPARENT)).toStrictEqual(
-        new TransitiveReductionError(
-          `Cannot attach non-child descendant as a child`
-        )
-      );
-    });
+    describe('TransitiveReductionError', () => {
+      test("When attaching non-child descendant as a child", () => {
+        expect(family.attach(CHILD, GRANDPARENT)).toStrictEqual(
+            new TransitiveReductionError(
+                `Cannot attach non-child descendant as a child`
+            )
+        );
+      });
 
-    test("Attaching another ancestor of a child returns TransitiveReductionError", () => {
-      family.attach("p2");
-      family.attach(CHILD, "p2");
-      expect(family.attach("p2", PARENT)).toStrictEqual(
-        new TransitiveReductionError(
-          `Cannot attach child whose descendant is a child of the parent`
-        )
-      );
-    });
+      test("When attaching another ancestor of a child", () => {
+        family.attach("p2");
+        family.attach(CHILD, "p2");
+        expect(family.attach("p2", PARENT)).toStrictEqual(
+            new TransitiveReductionError(
+                `Cannot attach child whose descendant is a child of the parent`
+            )
+        );
+      });
 
-    test("Attaching sibling returns TransitiveReductionError", () => {
-      family.attach("child2", PARENT);
-      expect(family.attach(CHILD, "child2")).toStrictEqual(
-        new TransitiveReductionError(`Cannot attach to parents descendants`)
-      );
-    });
+      test("When attaching sibling", () => {
+        family.attach("child2", PARENT);
+        expect(family.attach(CHILD, "child2")).toStrictEqual(
+            new TransitiveReductionError(`Cannot attach to parents descendants`)
+        );
+      });
 
-    test("Attaching nibling returns TransitiveReductionError", () => {
-      family.attach("child2", PARENT);
-      family.attach("nibling", "child2");
-      expect(family.attach(CHILD, "nibling")).toStrictEqual(
-        new TransitiveReductionError(`Cannot attach to parents descendants`)
-      );
-    });
+      test("When attaching nibling", () => {
+        family.attach("child2", PARENT);
+        family.attach("nibling", "child2");
+        expect(family.attach(CHILD, "nibling")).toStrictEqual(
+            new TransitiveReductionError(`Cannot attach to parents descendants`)
+        );
+      });
+
+      // TODO: attaching descendant to root throws TransitiveReductionError
+    })
 
     test("Adds string node", () => {
       const hierarchy = new OrderedOverlappingHierarchy<string>();
@@ -173,7 +177,6 @@ describe("OrderedOverlappingHierarchy", () => {
       );
     });
 
-    // todo: attaching descendant to root throws TransitiveReductionError
     test("Attaching node to undefined parent removes parents", () => {
       family.attach(CHILD);
       expect(family.parents(CHILD)).toStrictEqual(new Set([]));
