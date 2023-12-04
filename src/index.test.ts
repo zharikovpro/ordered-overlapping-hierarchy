@@ -333,24 +333,24 @@ describe("OrderedOverlappingHierarchy", () => {
 
   describe(".unlink()", () => {
     test("Parent no longer has detached child", () => {
-      family.unlink(CHILD, PARENT);
+      family.unlink(PARENT, CHILD);
       expect(family.children(PARENT)?.includes(CHILD)).toStrictEqual(false);
     });
 
     test("Detached child still belongs to another parent", () => {
       family.link("parent2");
       family.link(CHILD, "parent2");
-      family.unlink(CHILD, PARENT);
+      family.unlink(PARENT, CHILD);
       expect(family.children("parent2")?.includes(CHILD)).toStrictEqual(true);
     });
 
     test("Child detached from the only parent still belongs to the hierarchy", () => {
-      family.unlink(CHILD, PARENT);
+      family.unlink(PARENT, CHILD);
       expect(family.descendants().has(CHILD)).toStrictEqual(true);
     });
 
     test("Child detached from the only parent becomes an hierarch", () => {
-      family.unlink(CHILD, PARENT);
+      family.unlink(PARENT, CHILD);
       expect(family.children()).toContain(CHILD);
     });
   });

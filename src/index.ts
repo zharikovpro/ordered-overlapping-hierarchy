@@ -57,14 +57,14 @@ export default class OrderedOverlappingHierarchy<Node> {
 
   #isRedundantLink = (child: Node, parent: Node): boolean => {
     const potentialReduction = new OrderedOverlappingHierarchy(this);
-    potentialReduction.unlink(child, parent);
+    potentialReduction.unlink(parent, child);
     return potentialReduction.#hasDescendant(parent, child);
   };
 
   #reduce = (): void => {
     this.#links()
       .filter(([parent, child]) => this.#isRedundantLink(child, parent))
-      .forEach(([parent, child]) => this.unlink(child, parent));
+      .forEach(([parent, child]) => this.unlink(parent, child));
   };
 
   #validateNewParent = (
@@ -129,10 +129,10 @@ export default class OrderedOverlappingHierarchy<Node> {
 
     if (parent) {
       this.#add(parent);
-      this.unlink(node, parent);
+      this.unlink(parent, node);
       this.#removeHierarch(node);
     } else {
-      this.parents(node)?.forEach((parent) => this.unlink(node, parent));
+      this.parents(node)?.forEach((parent) => this.unlink(parent, node));
     }
 
     const container = parent
@@ -179,21 +179,20 @@ export default class OrderedOverlappingHierarchy<Node> {
       ? this.#filterNodes((n) => !!this.children(n)?.includes(node))
       : undefined;
 
-  // todo: unlink(parent, child)
-  unlink(node: Node, parent: Node): void {
+  unlink(parent: Node, child: Node): void {
     this.#childrenMap.set(
       parent,
-      this.children(parent)?.filter((item) => item !== node) || []
+      this.children(parent)?.filter((item) => item !== child) || []
     );
 
-    if (this.parents(node)?.size === 0) {
-      this.#hierarchs.push(node);
+    if (this.parents(child)?.size === 0) {
+      this.#hierarchs.push(child);
     }
   }
 
   remove(node: Node): void {
     this.#childrenMap.delete(node);
     this.#removeHierarch(node);
-    this.#nodes().forEach((parent) => this.unlink(node, parent));
+    this.#nodes().forEach((parent) => this.unlink(parent, node));
   }
 }
