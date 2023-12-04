@@ -97,7 +97,7 @@ describe("OrderedOverlappingHierarchy", () => {
       // https://www.semanticscholar.org/paper/The-Transitive-Reduction-of-a-Directed-Graph-Aho-Garey/d0be1e20643e7e15bd4669f1c3ef0c2287852566?p2df
       // https://github.com/jafingerhut/cljol/blob/master/doc/transitive-reduction-notes.md#computing-the-transitive-reduction-of-a-dag
       // https://epubs.siam.org/doi/10.1137/0201008
-
+      // todo: retain the redyced structure VS transform structure (remove target's descendants)?
       test("When attaching non-child descendant as a child", () => {
         expect(family.attach(CHILD, GRANDPARENT)).toStrictEqual(
             new TransitiveReductionError(
@@ -106,6 +106,7 @@ describe("OrderedOverlappingHierarchy", () => {
         );
       });
 
+      // todo: retain the redyced structure VS transform structure?
       test("When attaching another ancestor of a child", () => {
         family.attach("p2");
         family.attach(CHILD, "p2");
@@ -116,6 +117,7 @@ describe("OrderedOverlappingHierarchy", () => {
         );
       });
 
+      // todo: retain the redyced structure VS transform structure?
       test("When attaching sibling", () => {
         family.attach("child2", PARENT);
         expect(family.attach(CHILD, "child2")).toStrictEqual(
@@ -123,6 +125,7 @@ describe("OrderedOverlappingHierarchy", () => {
         );
       });
 
+      // todo: retain the redyced structure VS transform structure?
       test("When attaching nibling", () => {
         family.attach("child2", PARENT);
         family.attach("nibling", "child2");
@@ -130,7 +133,6 @@ describe("OrderedOverlappingHierarchy", () => {
             new TransitiveReductionError(`Cannot attach to parents descendants`)
         );
       });
-
 
       test("When attaching ... removes redundant edge A->X", () => {
         const hierarchy = new OrderedOverlappingHierarchy<string>()
