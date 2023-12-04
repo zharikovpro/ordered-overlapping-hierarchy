@@ -118,8 +118,7 @@ describe("OrderedOverlappingHierarchy", () => {
         );
       });
 
-      // TODO: handle this complex case and check others
-      // TODO: alternative: automatically remove extra edges
+      // TODO: refactor and add more examples
       // for edge {a,b} of edges() do
       //   if there is a path from a to b that does not use edge {a,b} then remove edge {a,b}
       // end for
@@ -134,7 +133,7 @@ describe("OrderedOverlappingHierarchy", () => {
       // https://www.semanticscholar.org/paper/The-Transitive-Reduction-of-a-Directed-Graph-Aho-Garey/d0be1e20643e7e15bd4669f1c3ef0c2287852566?p2df
       // https://github.com/jafingerhut/cljol/blob/master/doc/transitive-reduction-notes.md#computing-the-transitive-reduction-of-a-dag
       // https://epubs.siam.org/doi/10.1137/0201008
-      test("When attaching ...", () => {
+      test("When attaching ... removes redundant edge A->X", () => {
         const hierarchy = new OrderedOverlappingHierarchy<string>()
         // A -> B & X
         // C -> X
@@ -146,13 +145,11 @@ describe("OrderedOverlappingHierarchy", () => {
         hierarchy.attach("B", "A");
         hierarchy.attach("X", "A");
         hierarchy.attach("X", "C");
-
-        expect(() => hierarchy.attach("C", "B")).toStrictEqual(
-            new TransitiveReductionError(`Cannot attach ...`)
-        );
+        hierarchy.attach("C", "B");
+        expect(hierarchy.children("A")).toStrictEqual(["B"]);
       });
 
-      // TODO: attaching descendant to root throws TransitiveReductionError
+      // TODO: attaching descendant to root throws TransitiveReductionError?
     })
 
     test("Adds string node", () => {
