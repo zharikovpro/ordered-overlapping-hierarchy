@@ -10,7 +10,7 @@ export class CycleError extends OrderedOverlappingHierarchyError {}
 export class TransitiveReductionError extends OrderedOverlappingHierarchyError {} // https://en.wikipedia.org/wiki/Transitive_reduction#In_directed_acyclic_graphs
 
 export default class OrderedOverlappingHierarchy<Node> {
-  #hierarchs: Array<Node> = []; // todo: model as childrenMap for root parent instead? simplifies the code with recursion, etc; consistent graph model similar to a tree with root node; no non-root vertices without edges
+  #hierarchs: Array<Node> = [];
   #childrenMap: Map<Node, Array<Node>> = new Map();
 
   #intersection = (a: Set<Node>, b: Set<Node>): Set<Node> =>
@@ -42,9 +42,9 @@ export default class OrderedOverlappingHierarchy<Node> {
     this.#hierarchs = this.#hierarchs.filter((n) => n !== node);
   };
 
-  #links = (): [Node, Node][] => { // todo: return set?
+  #links = (): [Node, Node][] => {
     const edges: [Node, Node][] = []
-    this.#childrenMap.forEach((children, parent) => { // todo: flatMap?
+    this.#childrenMap.forEach((children, parent) => {
       children.forEach(child => edges.push([parent, child]))
     })
     return edges
@@ -114,7 +114,6 @@ export default class OrderedOverlappingHierarchy<Node> {
   // todo: attach(node, { parent })
   // todo: attach(node, { index })
   // todo: attach(node, { parent, index })
-
   attach(
     node: Node,
     parent?: Node,
@@ -148,7 +147,6 @@ export default class OrderedOverlappingHierarchy<Node> {
   children(): Array<Node>;
   children(node: Node): Array<Node> | undefined;
   children(node?: Node): Array<Node> | undefined {
-    // todo: simplify with root node? there will be no conditional
     if (node) {
       const children = this.#childrenMap.get(node);
       return children ? Array.from(children) : undefined;

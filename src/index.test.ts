@@ -86,9 +86,6 @@ describe("OrderedOverlappingHierarchy", () => {
 
     describe('Transitive reduction', () => {
       // TODO: refactor and add more examples
-      // for edge {a,b} of edges() do
-      //   if there is a path from a to b that does not use edge {a,b} then remove edge {a,b}
-      // end for
       // TODO: https://brunoscheufler.com/blog/2021-12-05-decreasing-graph-complexity-with-transitive-reductions
       // https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.dag.transitive_reduction.html#
       // https://networkx.org/documentation/stable/_modules/networkx/algorithms/dag.html#transitive_reduction
@@ -151,7 +148,7 @@ describe("OrderedOverlappingHierarchy", () => {
         expect(hierarchy.children("A")).toStrictEqual(["B"]);
       });
 
-      // TODO: attaching descendant to root throws TransitiveReductionError?
+      // TODO: attaching descendant to root case
     })
 
     test("Adds string node", () => {
