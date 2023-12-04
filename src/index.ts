@@ -17,18 +17,18 @@ export default class OrderedOverlappingHierarchy<Node> {
     new Set([...a].filter((x) => b.has(x)));
 
   #filterNodes = (filter: (node: Node) => boolean): Set<Node> =>
-    new Set(Array.from(this.#nodes()).filter(filter));
+    new Set(Array.from(this.nodes()).filter(filter));
 
   constructor(source?: OrderedOverlappingHierarchy<Node>) {
     if (source) {
       this.#hierarchs = source.children();
-      source.descendants().forEach((node) => {
+      source.nodes().forEach((node) => {
         this.#childrenMap.set(node, Array.from(source.children(node) || []));
       });
     }
   }
 
-  #nodes = (): Set<Node> => new Set(this.#childrenMap.keys()); // todo: convert to public
+  nodes = (): Set<Node> => new Set(this.#childrenMap.keys());
 
   #add = (node: Node): void => { // todo: covert to public
     this.#childrenMap.set(node, this.children(node) || []);
@@ -78,7 +78,7 @@ export default class OrderedOverlappingHierarchy<Node> {
       ],
       [
         (n: Node, p: Node) =>
-          this.#nodes().has(n) && this.descendants(node)?.has(p),
+          this.nodes().has(n) && this.descendants(node)?.has(p),
         new CycleError("Cannot attach ancestor as a child"),
       ],
       [
@@ -155,10 +155,7 @@ export default class OrderedOverlappingHierarchy<Node> {
     }
   }
 
-  descendants(): Set<Node>; // todo: deprecate in favor of nodes() and test this public method
-  descendants(node: Node): Set<Node> | undefined;
-  descendants(node?: Node): Set<Node> | undefined {
-    if (!node) return this.#nodes();
+  descendants(node: Node): Set<Node> | undefined {
     if (!this.#childrenMap.has(node)) return undefined;
 
     const children = this.children(node) || [];
@@ -193,6 +190,6 @@ export default class OrderedOverlappingHierarchy<Node> {
   remove(node: Node): void {
     this.#childrenMap.delete(node);
     this.#removeHierarch(node);
-    this.#nodes().forEach((parent) => this.unlink(parent, node));
+    this.nodes().forEach((parent) => this.unlink(parent, node));
   }
 }
