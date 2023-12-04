@@ -42,13 +42,7 @@ export default class OrderedOverlappingHierarchy<Node> {
     this.#hierarchs = this.#hierarchs.filter((n) => n !== node);
   };
 
-  #isRedundantEdge = (parent: Node, child: Node): boolean => {
-    const reducedHierarchy = new OrderedOverlappingHierarchy(this);
-    reducedHierarchy.detach(child, parent);
-    return !!reducedHierarchy.descendants(parent)?.has(child);
-  }
-
-  #edges = (): [Node, Node][] => { // todo: return set?
+  #links = (): [Node, Node][] => { // todo: return set?
     const edges: [Node, Node][] = []
     this.#childrenMap.forEach((children, parent) => { // todo: flatMap?
       children.forEach(child => edges.push([parent, child]))
@@ -56,9 +50,17 @@ export default class OrderedOverlappingHierarchy<Node> {
     return edges
   }
 
+  #hasDescendant = (parent: Node, child: Node): boolean => !!this.descendants(parent)?.has(child)
+
+  #isRedundantLink = (parent: Node, child: Node): boolean => {
+    const potentialReduction = new OrderedOverlappingHierarchy(this);
+    potentialReduction.detach(child, parent);
+    return potentialReduction.#hasDescendant(parent, child);
+  }
+
   #reduce = (): void => {
-    for (const [parent, child] of this.#edges()) {
-      if (this.#isRedundantEdge(parent, child)) {
+    for (const [parent, child] of this.#links()) {
+      if (this.#isRedundantLink(parent, child)) {
         this.detach(child, parent)
       }
     }
