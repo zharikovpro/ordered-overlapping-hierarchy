@@ -9,6 +9,7 @@ export class LoopError extends OrderedOverlappingHierarchyError {}
 export class CycleError extends OrderedOverlappingHierarchyError {}
 
 export default class OrderedOverlappingHierarchy<Node> {
+  // TODO: consider using object type Link = { parent: Node, child: Node } or tuple type // https://www.typescriptlang.org/docs/handbook/2/objects.html#tuple-types
   readonly hierarch: Node;
   #childrenMap: Map<Node, Array<Node>> = new Map();
 
@@ -38,8 +39,7 @@ export default class OrderedOverlappingHierarchy<Node> {
     array.splice(index ?? array.length, 0, node);
   };
 
-  #links = (): [Node, Node][] => { // todo: make public and test
-    // todo: consider flatMap
+  #links = (): [Node, Node][] => { // todo: make public and test, better to return link object with parent and child fields
     const links: [Node, Node][] = []
     this.#childrenMap.forEach((children, parent) => {
       children.forEach(child => links.push([parent, child]))
@@ -51,14 +51,14 @@ export default class OrderedOverlappingHierarchy<Node> {
 
   #isRedundantLink = (parent: Node, child: Node): boolean => {
     const potentialReduction = new OrderedOverlappingHierarchy(this);
-    potentialReduction.detach(child, parent);
+    potentialReduction.detach(parent, child);
     return potentialReduction.#hasDescendant(parent, child);
   }
 
   #reduce = (): void => {
     for (const [parent, child] of this.#links()) {
       if (this.#isRedundantLink(parent, child)) {
-        this.detach(child, parent)
+        this.detach(parent, child)
       }
     }
   }
@@ -110,19 +110,14 @@ export default class OrderedOverlappingHierarchy<Node> {
       ? this.#filter((n) => !!this.children(n)?.includes(node))
       : undefined;
 
-  detach(node: Node, parent: Node): void {
+  detach(parent: Node, child: Node): void {
     this.#childrenMap.set(
       parent,
-      this.children(parent)?.filter((item) => item !== node) || []
+      this.children(parent)?.filter((item) => item !== child) || []
     );
 
-    if (this.parents(node)?.size === 0) {
-      this.#childrenMap.delete(node);
+    if (this.parents(child)?.size === 0) {
+      this.#childrenMap.delete(child);
     }
-  }
-
-  delete(node: Node): void { // todo: replace with unlink from the last parent?
-    this.#childrenMap.delete(node);
-    this.nodes().forEach((parent) => this.detach(node, parent));
   }
 }

@@ -47,7 +47,9 @@ describe("OrderedOverlappingHierarchy", () => {
     test("Restructuring a clone keeps the source structure intact", () => {
       const originalNodes = family.nodes();
       for (const node of clone.nodes()) {
-        clone.delete(node);
+        for (const parent of clone.parents(node) as Set<string>) {
+          clone.detach(parent, node);
+        }
       }
       clone.attach("New Child", clone.hierarch);
       clone.attach("New Parent", "New Child");
@@ -299,51 +301,26 @@ describe("OrderedOverlappingHierarchy", () => {
   });
 
   describe(".detach()", () => {
+    test("Unlinking hierarch from itself has no effect", () => {
+      family.detach(GRANDPARENT, GRANDPARENT);
+      expect(family.hierarch).toStrictEqual(GRANDPARENT);
+    });
+
     test("Parent no longer has detached child", () => {
-      family.detach(CHILD, PARENT);
+      family.detach(PARENT, CHILD);
       expect(family.children(PARENT)?.includes(CHILD)).toStrictEqual(false);
     });
 
     test("Detached child still belongs to another parent", () => {
       family.attach("parent2", family.hierarch);
       family.attach(CHILD, "parent2");
-      family.detach(CHILD, PARENT);
+      family.detach(PARENT, CHILD);
       expect(family.children("parent2")?.includes(CHILD)).toStrictEqual(true);
     });
 
     test("Child detached from the only parent is removed from the hierarchy", () => {
-      family.detach(CHILD, PARENT);
+      family.detach(PARENT, CHILD);
       expect(family.nodes().has(CHILD)).toStrictEqual(false);
-    });
-  });
-
-  describe(".delete()", function () {
-    test("Deleting hierarch has no effect", () => {
-      family.delete(GRANDPARENT);
-      expect(family.hierarch).toStrictEqual(GRANDPARENT);
-    });
-
-    test("Detaches all children from the parent", () => {
-      family.delete(PARENT);
-      expect(family.parents(CHILD)).toEqual(new Set([]));
-    });
-
-    test("Detaches child from all parents", () => {
-      family.delete(PARENT);
-      expect(family.children(GRANDPARENT)?.includes(PARENT)).toStrictEqual(
-        false
-      );
-    });
-
-    test("Hierarchy no longer has removed node", () => {
-      family.delete(PARENT);
-      expect(family.nodes().has(PARENT)).toStrictEqual(false);
-    });
-
-    test("Removing the only node of the hierarchy empties the hierarchy", () => {
-      const hierarchy = new OrderedOverlappingHierarchy<string>("orphan");
-      hierarchy.delete("orphan");
-      expect(hierarchy.nodes()).toStrictEqual(new Set());
     });
   });
 });
