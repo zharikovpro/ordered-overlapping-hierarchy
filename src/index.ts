@@ -10,6 +10,7 @@ export class CycleError extends OrderedOverlappingHierarchyError {}
 export class TransitiveReductionError extends OrderedOverlappingHierarchyError {} // https://en.wikipedia.org/wiki/Transitive_reduction#In_directed_acyclic_graphs
 
 export default class OrderedOverlappingHierarchy<Node> {
+  readonly hierarch: Node;
   #hierarchs: Array<Node> = [];
   #childrenMap: Map<Node, Array<Node>> = new Map();
 
@@ -17,18 +18,20 @@ export default class OrderedOverlappingHierarchy<Node> {
     new Set([...a].filter((x) => b.has(x)));
 
   #filterNodes = (filter: (node: Node) => boolean): Set<Node> =>
-    new Set(Array.from(this.#nodes()).filter(filter));
+    new Set(Array.from(this.nodes()).filter(filter));
 
-  constructor(source?: OrderedOverlappingHierarchy<Node>) {
-    if (source) {
-      this.#hierarchs = source.children();
+  constructor(source: Node | OrderedOverlappingHierarchy<Node>) {
+    if (source instanceof OrderedOverlappingHierarchy) {
+      this.#hierarchs = [source.hierarch];
       source.descendants().forEach((node) => {
         this.#childrenMap.set(node, Array.from(source.children(node) || []));
       });
     }
+    this.hierarch = source instanceof OrderedOverlappingHierarchy ? source.hierarch : source;
+    this.#add(this.hierarch);
   }
 
-  #nodes = (): Set<Node> => new Set(this.#childrenMap.keys());
+  nodes = (): Set<Node> => new Set(this.#childrenMap.keys());
 
   #add = (node: Node): void => {
     this.#childrenMap.set(node, this.children(node) || []);
@@ -77,7 +80,7 @@ export default class OrderedOverlappingHierarchy<Node> {
       ],
       [
         (n: Node, p: Node) =>
-          this.#nodes().has(n) && this.descendants(node)?.has(p),
+          this.nodes().has(n) && this.descendants(node)?.has(p),
         new CycleError("Cannot attach ancestor as a child"),
       ],
       [
@@ -111,12 +114,10 @@ export default class OrderedOverlappingHierarchy<Node> {
     return failure ? failure[1] : undefined;
   };
 
-  // todo: attach(node, { parent })
-  // todo: attach(node, { index })
-  // todo: attach(node, { parent, index })
+  // todo: attach(parent, child, index?)
   attach(
     node: Node,
-    parent?: Node,
+    parent: Node,
     index?: number
   ): OrderedOverlappingHierarchyError | void {
     if (parent) {
@@ -144,21 +145,15 @@ export default class OrderedOverlappingHierarchy<Node> {
     this.#reduce();
   }
 
-  children(): Array<Node>;
-  children(node: Node): Array<Node> | undefined;
-  children(node?: Node): Array<Node> | undefined {
-    if (node) {
+  children(node: Node): Array<Node> | undefined {
       const children = this.#childrenMap.get(node);
       return children ? Array.from(children) : undefined;
-    } else {
-      return Array.from(this.#hierarchs);
-    }
   }
 
   descendants(): Set<Node>;
   descendants(node: Node): Set<Node> | undefined;
   descendants(node?: Node): Set<Node> | undefined {
-    if (!node) return this.#nodes();
+    if (!node) return this.nodes();
     if (!this.#childrenMap.has(node)) return undefined;
 
     const children = this.children(node) || [];
@@ -193,6 +188,6 @@ export default class OrderedOverlappingHierarchy<Node> {
   delete(node: Node): void {
     this.#childrenMap.delete(node);
     this.#removeHierarch(node);
-    this.#nodes().forEach((parent) => this.detach(node, parent));
+    this.nodes().forEach((parent) => this.detach(node, parent));
   }
 }

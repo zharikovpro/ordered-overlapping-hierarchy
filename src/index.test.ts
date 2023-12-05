@@ -12,21 +12,27 @@ describe("OrderedOverlappingHierarchy", () => {
   let family: OrderedOverlappingHierarchy<string>;
 
   beforeEach(() => {
-    family = new OrderedOverlappingHierarchy();
-    family.attach(GRANDPARENT);
+    family = new OrderedOverlappingHierarchy(GRANDPARENT);
     family.attach(PARENT, GRANDPARENT);
     family.attach(CHILD, PARENT);
   });
 
-  describe("new OverlappingHierarchy(source)", () => {
+  describe("new OverlappingHierarchy(hierarch)", () => {
+    test("Creates hierarchy with a single node", () => {
+      const hierarchy = new OrderedOverlappingHierarchy<string>('')
+      expect(hierarchy.hierarch).toStrictEqual('');
+    });
+  })
+
+  describe("new OverlappingHierarchy(hierarchy)", () => {
     let clone: OrderedOverlappingHierarchy<string>;
 
     beforeEach(() => {
       clone = new OrderedOverlappingHierarchy(family);
     });
 
-    test("Has the same hierarchs", () => {
-      expect(clone.children()).toStrictEqual(family.children());
+    test("Has the same hierarch", () => {
+      expect(clone.hierarch).toStrictEqual(family.hierarch);
     });
 
     test("Has the same nodes", () => {
@@ -44,7 +50,7 @@ describe("OrderedOverlappingHierarchy", () => {
       for (const node of clone.descendants()) {
         clone.delete(node);
       }
-      clone.attach("New Child");
+      clone.attach("New Child", clone.hierarch);
       clone.attach("New Parent", "New Child");
       expect(originalNodes).toStrictEqual(family.descendants());
     });
@@ -53,10 +59,6 @@ describe("OrderedOverlappingHierarchy", () => {
   describe(".children()", () => {
     test("When parent does not exist, returns undefined", () => {
       expect(family.children("missing")).toBeUndefined();
-    });
-
-    test("When parent is undefined, returns hierarchs", () => {
-      expect(family.children()).toStrictEqual([GRANDPARENT]);
     });
 
     test("Returns children ordered from older to younger", () => {
@@ -108,7 +110,7 @@ describe("OrderedOverlappingHierarchy", () => {
 
       // todo: retain the redyced structure VS transform structure?
       test("When attaching another ancestor of a child", () => {
-        family.attach("p2");
+        family.attach("p2", family.hierarch);
         family.attach(CHILD, "p2");
         expect(family.attach("p2", PARENT)).toStrictEqual(
             new TransitiveReductionError(
@@ -135,14 +137,13 @@ describe("OrderedOverlappingHierarchy", () => {
       });
 
       test("When attaching ... removes redundant edge A->X", () => {
-        const hierarchy = new OrderedOverlappingHierarchy<string>()
+        const hierarchy = new OrderedOverlappingHierarchy<string>("A")
         // A -> B & X
         // C -> X
         // B -> C => transitive reduction
-        hierarchy.attach("A");
-        hierarchy.attach("B");
-        hierarchy.attach("C");
-        hierarchy.attach("X");
+        hierarchy.attach("B", hierarchy.hierarch);
+        hierarchy.attach("C", hierarchy.hierarch);
+        hierarchy.attach("X", hierarchy.hierarch);
         hierarchy.attach("B", "A");
         hierarchy.attach("X", "A");
         hierarchy.attach("X", "C");
@@ -154,26 +155,23 @@ describe("OrderedOverlappingHierarchy", () => {
     })
 
     test("Adds string node", () => {
-      const hierarchy = new OrderedOverlappingHierarchy<string>();
-      hierarchy.attach("relative");
+      const hierarchy = new OrderedOverlappingHierarchy<string>("relative");
       expect(hierarchy.descendants()).toStrictEqual(new Set(["relative"]));
     });
 
     test("Adds null node", () => {
-      const hierarchy = new OrderedOverlappingHierarchy<null>();
-      hierarchy.attach(null);
+      const hierarchy = new OrderedOverlappingHierarchy<null>(null);
       expect(hierarchy.descendants()).toStrictEqual(new Set([null]));
     });
 
     test("Adds object node", () => {
-      const hierarchy = new OrderedOverlappingHierarchy<object>();
-      hierarchy.attach({});
+      const hierarchy = new OrderedOverlappingHierarchy<object>({});
       expect(hierarchy.descendants()).toStrictEqual(new Set([{}]));
     });
 
     test("Adding existing node does not change hierarchy", () => {
       const originalNodes = family.descendants();
-      family.attach(CHILD);
+      family.attach(CHILD, family.hierarch);
       expect(originalNodes).toStrictEqual(family.descendants());
     });
 
@@ -198,28 +196,6 @@ describe("OrderedOverlappingHierarchy", () => {
       expect(family.children("another parent")?.includes(CHILD)).toStrictEqual(
         true
       );
-    });
-
-    test("Attached child has a parent", () => {
-      const GREAT_GRANDPARENT = "great-grandparent";
-      family.attach(GREAT_GRANDPARENT);
-      family.attach(GRANDPARENT, GREAT_GRANDPARENT);
-      expect(family.parents(GRANDPARENT)).toStrictEqual(
-        new Set([GREAT_GRANDPARENT])
-      );
-    });
-
-    test("Attaching node to undefined parent removes parents", () => {
-      family.attach(CHILD);
-      expect(family.parents(CHILD)).toStrictEqual(new Set([]));
-    });
-
-    test("Attaching node to parent removes it from hierarchs", () => {
-      const hierarchy = new OrderedOverlappingHierarchy<string>();
-      hierarchy.attach("A");
-      hierarchy.attach("B");
-      hierarchy.attach("B", "A");
-      expect(hierarchy.children()).toStrictEqual(["A"]);
     });
 
     describe("Ordering", () => {
@@ -278,15 +254,15 @@ describe("OrderedOverlappingHierarchy", () => {
         expect(family.children(PARENT)).toStrictEqual([CHILD, "LAST"]);
       });
 
-      test("New hierarch is attached at the end of the top level list by default", () => {
-        family.attach("HIERARCH");
-        expect(family.children()).toStrictEqual([GRANDPARENT, "HIERARCH"]);
+      test("New node is attached at the end of the top level children by default", () => {
+        family.attach("parent2", family.hierarch);
+        expect(family.children(family.hierarch)).toStrictEqual(["parent", "parent2"]);
       });
 
-      test("Zero index attaches hierarch at the beginning of the top level list", () => {
-        family.attach("HIERARCH", undefined, 0);
-        expect(family.children()).toStrictEqual(["HIERARCH", GRANDPARENT]);
-      });
+      // test("Zero index attaches hierarch at the beginning of the top level list", () => {
+      //   family.attach("HIERARCH", undefined, 0);
+      //   expect(family.hierarch).toStrictEqual(["HIERARCH", GRANDPARENT]);
+      // });
     });
   });
 
@@ -341,7 +317,7 @@ describe("OrderedOverlappingHierarchy", () => {
     });
 
     test("Detached child still belongs to another parent", () => {
-      family.attach("parent2");
+      family.attach("parent2", family.hierarch);
       family.attach(CHILD, "parent2");
       family.detach(CHILD, PARENT);
       expect(family.children("parent2")?.includes(CHILD)).toStrictEqual(true);
@@ -352,16 +328,16 @@ describe("OrderedOverlappingHierarchy", () => {
       expect(family.descendants().has(CHILD)).toStrictEqual(true);
     });
 
-    test("Child detached from the only parent becomes an hierarch", () => {
+    test("Child detached from the only parent is removed from the hierarchy", () => {
       family.detach(CHILD, PARENT);
-      expect(family.children()).toContain(CHILD);
+      expect(family.nodes().has(CHILD)).toStrictEqual(false);
     });
   });
 
   describe(".delete()", function () {
-    test("Hierarchy no longer has this hierarch", () => {
+    test("Deleting hierarch has no effect", () => {
       family.delete(GRANDPARENT);
-      expect(family.children()).not.toContain(GRANDPARENT);
+      expect(family.hierarch).toStrictEqual(GRANDPARENT);
     });
 
     test("Detaches all children from the parent", () => {
@@ -382,8 +358,7 @@ describe("OrderedOverlappingHierarchy", () => {
     });
 
     test("Removing the only node of the hierarchy empties the hierarchy", () => {
-      const hierarchy = new OrderedOverlappingHierarchy<string>();
-      hierarchy.attach("orphan");
+      const hierarchy = new OrderedOverlappingHierarchy<string>("orphan");
       hierarchy.delete("orphan");
       expect(hierarchy.descendants()).toStrictEqual(new Set());
     });
