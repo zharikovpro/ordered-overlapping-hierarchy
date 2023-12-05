@@ -51,6 +51,8 @@ hierarchy.link('H', 'J')
 
 ### Traversal
 
+`hierarchy.nodes()`
+
 `hierarchy.hierarch`
 
 `hierarchy.children(node)`

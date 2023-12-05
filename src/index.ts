@@ -27,8 +27,6 @@ export default class OrderedOverlappingHierarchy<Node> {
     }
   }
 
-  nodes = (): Set<Node> => new Set(this.#childrenMap.keys());
-
   #add = (node: Node): void => {
     this.#childrenMap.set(node, this.children(node) || []);
   };
@@ -60,15 +58,17 @@ export default class OrderedOverlappingHierarchy<Node> {
     child: Node;
   }): boolean => {
     const potentialReduction = new OrderedOverlappingHierarchy(this);
-    potentialReduction.detach(parent, child);
+    potentialReduction.unlink(parent, child);
     return potentialReduction.#hasDescendant(parent, child);
   };
 
   #reduce = (): void => {
     this.#links()
       .filter(this.#isRedundantLink)
-      .forEach(({ parent, child }) => this.detach(parent, child));
+      .forEach(({ parent, child }) => this.unlink(parent, child));
   };
+
+  nodes = (): Set<Node> => new Set(this.#childrenMap.keys());
 
   // todo: consider link(link: { parent, child, index? })
   link(
@@ -117,7 +117,7 @@ export default class OrderedOverlappingHierarchy<Node> {
       ? this.#filter((n) => !!this.children(n)?.includes(node))
       : undefined;
 
-  detach(parent: Node, child: Node): void {
+  unlink(parent: Node, child: Node): void {
     this.#childrenMap.set(
       parent,
       this.children(parent)?.filter((item) => item !== child) || []
