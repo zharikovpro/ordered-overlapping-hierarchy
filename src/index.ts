@@ -118,8 +118,6 @@ export default class OrderedOverlappingHierarchy<Node> {
     this.#add(parent);
     this.#add(child);
 
-    //this.detach(child, parent); // todo:? do not detach, onlly delete element from childrenMap as part of position
-
     this.#position(this.#childrenMap.get(parent) || [], child, index);
 
     this.#reduce();
