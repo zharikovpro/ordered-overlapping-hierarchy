@@ -83,13 +83,6 @@ export default class OrderedOverlappingHierarchy<Node> {
       ],
       [
         (n: Node, p: Node) =>
-          p && !this.children(p)?.includes(n) && this.descendants(p)?.has(n),
-        new TransitiveReductionError(
-          "Cannot attach non-child descendant as a child" // todo: add test case for reduction, remove validation
-        ),
-      ],
-      [
-        (n: Node, p: Node) =>
           this.#intersection(
             new Set(this.descendants(n)),
             new Set(this.children(p))
@@ -118,7 +111,7 @@ export default class OrderedOverlappingHierarchy<Node> {
     this.#add(parent);
     this.#add(child);
 
-    this.#position(this.#childrenMap.get(parent) || [], child, index);
+    this.#position(this.#childrenMap.get(parent) as Node[], child, index);
 
     this.#reduce();
   }

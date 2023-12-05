@@ -99,13 +99,9 @@ describe("OrderedOverlappingHierarchy", () => {
       // https://www.semanticscholar.org/paper/The-Transitive-Reduction-of-a-Directed-Graph-Aho-Garey/d0be1e20643e7e15bd4669f1c3ef0c2287852566?p2df
       // https://github.com/jafingerhut/cljol/blob/master/doc/transitive-reduction-notes.md#computing-the-transitive-reduction-of-a-dag
       // https://epubs.siam.org/doi/10.1137/0201008
-      // todo: retain the redyced structure VS transform structure (remove target's descendants)?
-      test("When attaching non-child descendant as a child", () => {
-        expect(family.attach(CHILD, GRANDPARENT)).toStrictEqual(
-            new TransitiveReductionError(
-                `Cannot attach non-child descendant as a child`
-            )
-        );
+      test("Linking to non-child descendant does not change children", () => { // todo: retains structure, compare full hierarchies
+        expect(family.attach(CHILD, GRANDPARENT)).toBeUndefined();
+        expect(family.children(GRANDPARENT)).toStrictEqual([PARENT]);
       });
 
       // todo: retain the redyced structure VS transform structure?
