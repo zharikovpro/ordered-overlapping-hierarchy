@@ -1,7 +1,6 @@
 import OrderedOverlappingHierarchy, {
   CycleError,
-  LoopError,
-  TransitiveReductionError, // todo: remove if favor of auto-reduction?
+  LoopError
 } from "./index";
 
 const CHILD = "child";
@@ -99,20 +98,18 @@ describe("OrderedOverlappingHierarchy", () => {
       // https://www.semanticscholar.org/paper/The-Transitive-Reduction-of-a-Directed-Graph-Aho-Garey/d0be1e20643e7e15bd4669f1c3ef0c2287852566?p2df
       // https://github.com/jafingerhut/cljol/blob/master/doc/transitive-reduction-notes.md#computing-the-transitive-reduction-of-a-dag
       // https://epubs.siam.org/doi/10.1137/0201008
-      test("Linking to non-child descendant does not change children", () => { // todo: retains structure, compare full hierarchies
+      test("Linking to non-child descendant does not change structure", () => { // todo: retains structure, compare full hierarchies
         expect(family.attach(CHILD, GRANDPARENT)).toBeUndefined();
         expect(family.children(GRANDPARENT)).toStrictEqual([PARENT]);
+        expect(family.parents(CHILD)).toStrictEqual(new Set([PARENT]));
       });
 
       // todo: retain the redyced structure VS transform structure?
-      test("When attaching another ancestor of a child", () => {
+      test("Linking another ancestor of a child does not change structure", () => {
         family.attach("p2", family.hierarch);
         family.attach(CHILD, "p2");
-        expect(family.attach("p2", PARENT)).toStrictEqual(
-            new TransitiveReductionError(
-                `Cannot attach child whose descendant is a child of the parent`
-            )
-        );
+        expect(family.attach("p2", PARENT)).toBeUndefined()
+        expect(family.children("p2")).toStrictEqual([CHILD]);
       });
 
       test("When attaching to sibling, removes redundant parent link", () => {

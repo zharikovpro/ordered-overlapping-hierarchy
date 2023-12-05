@@ -7,14 +7,10 @@ class OrderedOverlappingHierarchyError extends Error {
 
 export class LoopError extends OrderedOverlappingHierarchyError {}
 export class CycleError extends OrderedOverlappingHierarchyError {}
-export class TransitiveReductionError extends OrderedOverlappingHierarchyError {} // https://en.wikipedia.org/wiki/Transitive_reduction#In_directed_acyclic_graphs
 
 export default class OrderedOverlappingHierarchy<Node> {
   readonly hierarch: Node;
   #childrenMap: Map<Node, Array<Node>> = new Map();
-
-  #intersection = (a: Set<Node>, b: Set<Node>): Set<Node> =>
-    new Set([...a].filter((n) => b.has(n)));
 
   #filter = (filter: (node: Node) => boolean): Set<Node> =>
     new Set([...this.nodes()].filter(filter));
@@ -67,45 +63,17 @@ export default class OrderedOverlappingHierarchy<Node> {
     }
   }
 
-  #validateNewChild = (
-    parent: Node,
-    child: Node
-  ): OrderedOverlappingHierarchyError | void => {
-    const validators: [Function, OrderedOverlappingHierarchyError][] = [
-      [
-        (n: Node, p: Node) => n === p,
-        new LoopError("Cannot attach node to itself"),
-      ],
-      [
-        (n: Node, p: Node) =>
-          this.nodes().has(n) && this.descendants(child)?.has(p),
-        new CycleError("Cannot attach ancestor as a child"),
-      ],
-      [
-        (n: Node, p: Node) =>
-          this.#intersection(
-            new Set(this.descendants(n)),
-            new Set(this.children(p))
-          ).size > 0,
-        new TransitiveReductionError(
-          "Cannot attach child whose descendant is a child of the parent" // todo: add test case for reduction, remove validation
-        ),
-      ]
-    ];
-
-    const failure = validators.find(([condition]) => condition(child, parent));
-    return failure ? failure[1] : undefined;
-  };
-
   // todo: attach(parent, child, index?)
   attach(
     child: Node,
     parent: Node,
     index?: number
   ): OrderedOverlappingHierarchyError | void {
-    const error = this.#validateNewChild(parent, child);
-    if (error) {
-      return error;
+    if (parent === child) {
+      return new LoopError("Cannot attach node to itself")
+    }
+    if (this.nodes().has(child) && this.descendants(child)?.has(parent)) {
+      return new CycleError("Cannot attach ancestor as a child")
     }
 
     this.#add(parent);
