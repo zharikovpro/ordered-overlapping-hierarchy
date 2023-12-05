@@ -18,18 +18,18 @@ D  E I  J
 
 ```typescript
 const hierarchy = new OverlappingHierarchy('0')
-hierarchy.attach('A', '0')
-hierarchy.attach('B', '0')
-hierarchy.attach('A', 'C')
-hierarchy.attach('B', 'C')
-hierarchy.attach('C', 'D')
-hierarchy.attach('C', 'E')
-hierarchy.attach('F', '0')
-hierarchy.attach('G', '0')
-hierarchy.attach('F', 'H')
-hierarchy.attach('G', 'H')
-hierarchy.attach('H', 'I')
-hierarchy.attach('H', 'J')
+hierarchy.link('A', '0')
+hierarchy.link('B', '0')
+hierarchy.link('A', 'C')
+hierarchy.link('B', 'C')
+hierarchy.link('C', 'D')
+hierarchy.link('C', 'E')
+hierarchy.link('F', '0')
+hierarchy.link('G', '0')
+hierarchy.link('F', 'H')
+hierarchy.link('G', 'H')
+hierarchy.link('H', 'I')
+hierarchy.link('H', 'J')
 ```
 
 ## API
@@ -42,18 +42,22 @@ hierarchy.attach('H', 'J')
 
 ### Mutation
 
-`hierarchy.attach(parent, child) // as last child`
-`hierarchy.attach(parent, child, index) // at specific index`
+`hierarchy.link(parent, child) // as last child`
+`hierarchy.link(parent, child, index) // at specific index`
 
-`hierarchy.detach(parent, child) // deletes node without parents`
+`hierarchy.unlink(parent, child) // detaches node from a parent`
+`hierarchy.unlink(parent, child) // deletes node without parents`
+`hierarchy.unlink(hierarch, hierarch) // unlinking hierarch from itself does nothing`
 
 ### Traversal
 
+`hierarchy.hierarch`
+
 `hierarchy.children(node)`
 
-`hierarchy.parents(node)`
-
 `hierarchy.descendants(node)`
+
+`hierarchy.parents(node)`
 
 `hierarchy.ancestors(node)`
 
@@ -62,11 +66,11 @@ hierarchy.attach('H', 'J')
 ### LoopError
 
 ```typescript
-hierarchy.attach('A', 'A') // LoopError: Cannot add node to itself
+hierarchy.link('A', 'A') // LoopError: Cannot add node to itself
 ```
 
 ### CycleError
 
 ```typescript
-hierarchy.attach('D', 'A') // CycleError: Cannot add ancestor as a child
+hierarchy.link('D', 'A') // CycleError: Cannot add ancestor as a child
 ```

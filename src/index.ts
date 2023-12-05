@@ -71,7 +71,7 @@ export default class OrderedOverlappingHierarchy<Node> {
   };
 
   // todo: consider link(link: { parent, child, index? })
-  attach(
+  link(
     parent: Node,
     child: Node,
     index?: number
