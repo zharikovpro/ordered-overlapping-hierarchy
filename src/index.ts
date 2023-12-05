@@ -9,7 +9,7 @@ export class LoopError extends OrderedOverlappingHierarchyError {}
 export class CycleError extends OrderedOverlappingHierarchyError {}
 
 export default class OrderedOverlappingHierarchy<Node> {
-  // TODO: consider using object type Link = { parent: Node, child: Node } or tuple type // https://www.typescriptlang.org/docs/handbook/2/objects.html#tuple-types
+  // TODO: consider using object type Link = { parent: Node, child: Node }
   readonly hierarch: Node;
   #childrenMap: Map<Node, Array<Node>> = new Map();
 
@@ -17,7 +17,8 @@ export default class OrderedOverlappingHierarchy<Node> {
     new Set([...this.nodes()].filter(filter));
 
   constructor(source: Node | OrderedOverlappingHierarchy<Node>) {
-    this.hierarch = source instanceof OrderedOverlappingHierarchy ? source.hierarch : source;
+    this.hierarch =
+      source instanceof OrderedOverlappingHierarchy ? source.hierarch : source;
     this.#childrenMap.set(this.hierarch, []);
     if (source instanceof OrderedOverlappingHierarchy) {
       source.nodes().forEach((node) => {
@@ -39,41 +40,47 @@ export default class OrderedOverlappingHierarchy<Node> {
     array.splice(index ?? array.length, 0, node);
   };
 
-  #links = (): [Node, Node][] => { // todo: make public and test, better to return link object with parent and child fields
-    const links: [Node, Node][] = []
+  #links = (): { parent: Node; child: Node }[] => {
+    // todo: make public and test, better to return link object with parent, child and index fields for complete representation
+    const links: { parent: Node; child: Node }[] = [];
     this.#childrenMap.forEach((children, parent) => {
-      children.forEach(child => links.push([parent, child]))
-    })
-    return links
-  }
+      children.forEach((child) => links.push({ parent, child }));
+    });
+    return links;
+  };
 
-  #hasDescendant = (parent: Node, child: Node): boolean => !!this.descendants(parent)?.has(child)
+  #hasDescendant = (parent: Node, child: Node): boolean =>
+    !!this.descendants(parent)?.has(child);
 
-  #isRedundantLink = (parent: Node, child: Node): boolean => {
+  #isRedundantLink = ({
+    parent,
+    child,
+  }: {
+    parent: Node;
+    child: Node;
+  }): boolean => {
     const potentialReduction = new OrderedOverlappingHierarchy(this);
     potentialReduction.detach(parent, child);
     return potentialReduction.#hasDescendant(parent, child);
-  }
+  };
 
   #reduce = (): void => {
-    for (const [parent, child] of this.#links()) {
-      if (this.#isRedundantLink(parent, child)) {
-        this.detach(parent, child)
-      }
-    }
-  }
+    this.#links()
+      .filter(this.#isRedundantLink)
+      .forEach(({ parent, child }) => this.detach(parent, child));
+  };
 
-  // todo: attach(parent, child, index?)
+  // todo: consider attach({ parent, child, index? })
   attach(
     child: Node,
     parent: Node,
     index?: number
   ): OrderedOverlappingHierarchyError | void {
     if (parent === child) {
-      return new LoopError("Cannot attach node to itself")
+      return new LoopError("Cannot attach node to itself");
     }
     if (this.nodes().has(child) && this.descendants(child)?.has(parent)) {
-      return new CycleError("Cannot attach ancestor as a child")
+      return new CycleError("Cannot attach ancestor as a child");
     }
 
     this.#add(parent);

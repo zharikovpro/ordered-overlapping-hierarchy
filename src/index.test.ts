@@ -1,7 +1,4 @@
-import OrderedOverlappingHierarchy, {
-  CycleError,
-  LoopError
-} from "./index";
+import OrderedOverlappingHierarchy, { CycleError, LoopError } from "./index";
 
 const CHILD = "child";
 const PARENT = "parent";
@@ -18,10 +15,10 @@ describe("OrderedOverlappingHierarchy", () => {
 
   describe("new OverlappingHierarchy(hierarch)", () => {
     test("Creates hierarchy with a single node", () => {
-      const hierarchy = new OrderedOverlappingHierarchy<string>('')
-      expect(hierarchy.hierarch).toStrictEqual('');
+      const hierarchy = new OrderedOverlappingHierarchy<string>("");
+      expect(hierarchy.hierarch).toStrictEqual("");
     });
-  })
+  });
 
   describe("new OverlappingHierarchy(hierarchy)", () => {
     let clone: OrderedOverlappingHierarchy<string>;
@@ -87,7 +84,7 @@ describe("OrderedOverlappingHierarchy", () => {
       );
     });
 
-    describe('Transitive reduction', () => {
+    describe("Transitive reduction", () => {
       // TODO: refactor and add more examples
       // TODO: https://brunoscheufler.com/blog/2021-12-05-decreasing-graph-complexity-with-transitive-reductions
       // https://networkx.org/documentation/stable/reference/algorithms/generated/networkx.algorithms.dag.transitive_reduction.html#
@@ -100,7 +97,8 @@ describe("OrderedOverlappingHierarchy", () => {
       // https://www.semanticscholar.org/paper/The-Transitive-Reduction-of-a-Directed-Graph-Aho-Garey/d0be1e20643e7e15bd4669f1c3ef0c2287852566?p2df
       // https://github.com/jafingerhut/cljol/blob/master/doc/transitive-reduction-notes.md#computing-the-transitive-reduction-of-a-dag
       // https://epubs.siam.org/doi/10.1137/0201008
-      test("Linking to non-child descendant does not change structure", () => { // todo: retains structure, compare full hierarchies
+      test("Linking to non-child descendant does not change structure", () => {
+        // todo: retains structure, compare full hierarchies
         expect(family.attach(CHILD, GRANDPARENT)).toBeUndefined();
         expect(family.children(GRANDPARENT)).toStrictEqual([PARENT]);
         expect(family.parents(CHILD)).toStrictEqual(new Set([PARENT]));
@@ -110,7 +108,7 @@ describe("OrderedOverlappingHierarchy", () => {
       test("Linking another ancestor of a child does not change structure", () => {
         family.attach("p2", family.hierarch);
         family.attach(CHILD, "p2");
-        expect(family.attach("p2", PARENT)).toBeUndefined()
+        expect(family.attach("p2", PARENT)).toBeUndefined();
         expect(family.children("p2")).toStrictEqual([CHILD]);
       });
 
@@ -128,7 +126,7 @@ describe("OrderedOverlappingHierarchy", () => {
       });
 
       test("When attaching ... removes redundant edge A->X", () => {
-        const hierarchy = new OrderedOverlappingHierarchy<string>("0")
+        const hierarchy = new OrderedOverlappingHierarchy<string>("0");
         // A -> B & X
         // C -> X
         // B -> C => transitive reduction
@@ -142,7 +140,7 @@ describe("OrderedOverlappingHierarchy", () => {
       });
 
       // TODO: attaching descendant to root case
-    })
+    });
 
     test("Adds string node", () => {
       const hierarchy = new OrderedOverlappingHierarchy<string>("relative");
@@ -246,7 +244,10 @@ describe("OrderedOverlappingHierarchy", () => {
 
       test("New node is attached at the end of the top level children by default", () => {
         family.attach("parent2", family.hierarch);
-        expect(family.children(family.hierarch)).toStrictEqual(["parent", "parent2"]);
+        expect(family.children(family.hierarch)).toStrictEqual([
+          "parent",
+          "parent2",
+        ]);
       });
 
       // test("Zero index attaches hierarch at the beginning of the top level list", () => {
