@@ -63,9 +63,9 @@ export default class OrderedOverlappingHierarchy<Node> {
     }
   }
 
-  #validateNewParent = (
-    node: Node,
-    parent: Node
+  #validateNewChild = (
+    parent: Node,
+    child: Node
   ): OrderedOverlappingHierarchyError | void => {
     const validators: [Function, OrderedOverlappingHierarchyError][] = [
       [
@@ -74,14 +74,14 @@ export default class OrderedOverlappingHierarchy<Node> {
       ],
       [
         (n: Node, p: Node) =>
-          this.nodes().has(n) && this.descendants(node)?.has(p),
+          this.nodes().has(n) && this.descendants(child)?.has(p),
         new CycleError("Cannot attach ancestor as a child"),
       ],
       [
         (n: Node, p: Node) =>
           p && !this.children(p)?.includes(n) && this.descendants(p)?.has(n),
         new TransitiveReductionError(
-          "Cannot attach non-child descendant as a child"
+          "Cannot attach non-child descendant as a child" // todo: add test case for reduction, remove validation
         ),
       ],
       [
@@ -91,20 +91,12 @@ export default class OrderedOverlappingHierarchy<Node> {
             new Set(this.children(p))
           ).size > 0,
         new TransitiveReductionError(
-          "Cannot attach child whose descendant is a child of the parent"
+          "Cannot attach child whose descendant is a child of the parent" // todo: add test case for reduction, remove validation
         ),
-      ],
-      [
-        (n: Node, p: Node) =>
-          this.#intersection(
-            new Set(this.parents(n)),
-            new Set(this.ancestors(p))
-          ).size > 0,
-        new TransitiveReductionError("Cannot attach to parents descendants"),
-      ],
+      ]
     ];
 
-    const failure = validators.find(([condition]) => condition(node, parent));
+    const failure = validators.find(([condition]) => condition(child, parent));
     return failure ? failure[1] : undefined;
   };
 
@@ -114,7 +106,7 @@ export default class OrderedOverlappingHierarchy<Node> {
     parent: Node,
     index?: number
   ): OrderedOverlappingHierarchyError | void {
-    const error = this.#validateNewParent(child, parent);
+    const error = this.#validateNewChild(parent, child);
     if (error) {
       return error;
     }

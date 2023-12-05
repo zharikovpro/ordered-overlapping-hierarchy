@@ -119,21 +119,17 @@ describe("OrderedOverlappingHierarchy", () => {
         );
       });
 
-      // todo: retain the redyced structure VS transform structure?
-      test("When attaching sibling", () => {
+      test("When attaching to sibling, removes redundant parent link", () => {
         family.attach("child2", PARENT);
-        expect(family.attach(CHILD, "child2")).toStrictEqual(
-            new TransitiveReductionError(`Cannot attach to parents descendants`)
-        );
+        expect(family.attach(CHILD, "child2")).toBeUndefined();
+        expect(family.parents(CHILD)).toStrictEqual(new Set(["child2"]));
       });
 
-      // todo: retain the redyced structure VS transform structure?
-      test("When attaching nibling", () => {
+      test("When attaching to nibling, removes redundant links", () => {
         family.attach("child2", PARENT);
         family.attach("nibling", "child2");
-        expect(family.attach(CHILD, "nibling")).toStrictEqual(
-            new TransitiveReductionError(`Cannot attach to parents descendants`)
-        );
+        expect(family.attach(CHILD, "nibling")).toBeUndefined();
+        expect(family.parents(CHILD)).toStrictEqual(new Set(["nibling"]));
       });
 
       test("When attaching ... removes redundant edge A->X", () => {
@@ -146,7 +142,7 @@ describe("OrderedOverlappingHierarchy", () => {
         hierarchy.attach("B", "A");
         hierarchy.attach("X", "A");
         hierarchy.attach("X", "C");
-        hierarchy.attach("C", "B");
+        expect(hierarchy.attach("C", "B")).toBeUndefined();
         expect(hierarchy.children("A")).toStrictEqual(["B"]);
       });
 
