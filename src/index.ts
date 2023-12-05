@@ -11,7 +11,6 @@ export class TransitiveReductionError extends OrderedOverlappingHierarchyError {
 
 export default class OrderedOverlappingHierarchy<Node> {
   readonly hierarch: Node;
-  #hierarchs: Array<Node> = [];
   #childrenMap: Map<Node, Array<Node>> = new Map();
 
   #intersection = (a: Set<Node>, b: Set<Node>): Set<Node> =>
@@ -22,7 +21,6 @@ export default class OrderedOverlappingHierarchy<Node> {
 
   constructor(source: Node | OrderedOverlappingHierarchy<Node>) {
     if (source instanceof OrderedOverlappingHierarchy) {
-      this.#hierarchs = [source.hierarch];
       source.descendants().forEach((node) => {
         this.#childrenMap.set(node, Array.from(source.children(node) || []));
       });
@@ -39,10 +37,6 @@ export default class OrderedOverlappingHierarchy<Node> {
 
   #position = (array: Array<Node>, node: Node, index?: number): void => {
     array.splice(index ?? array.length, 0, node);
-  };
-
-  #removeHierarch = (node: Node): void => {
-    this.#hierarchs = this.#hierarchs.filter((n) => n !== node);
   };
 
   #links = (): [Node, Node][] => {
@@ -132,15 +126,11 @@ export default class OrderedOverlappingHierarchy<Node> {
     if (parent) {
       this.#add(parent);
       this.detach(node, parent);
-      this.#removeHierarch(node);
     } else {
       this.parents(node)?.forEach((parent) => this.detach(node, parent));
     }
 
-    const container = parent
-      ? (this.#childrenMap.get(parent) as Node[])
-      : this.#hierarchs;
-    this.#position(container, node, index);
+    this.#position(this.#childrenMap.get(parent) as Node[], node, index);
 
     this.#reduce();
   }
@@ -181,13 +171,12 @@ export default class OrderedOverlappingHierarchy<Node> {
     );
 
     if (this.parents(node)?.size === 0) {
-      this.#hierarchs.push(node);
+      // todo remove from childrenMap correctly
     }
   }
 
   delete(node: Node): void {
     this.#childrenMap.delete(node);
-    this.#removeHierarch(node);
     this.nodes().forEach((parent) => this.detach(node, parent));
   }
 }
