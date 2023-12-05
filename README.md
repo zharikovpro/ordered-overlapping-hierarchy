@@ -42,11 +42,24 @@ hierarchy.link('H', 'J')
 
 ### Mutation
 
+#### Link
+
+`hierarchy.link(...)` automatically removes transitive links.
+
 `hierarchy.link(parent, child) // as last child`
+
 `hierarchy.link(parent, child, index) // at specific index`
 
-`hierarchy.unlink(parent, child) // detaches node from a parent`
+`hierarchy.link('A', 'A') // LoopError: Cannot add node to itself`
+
+`hierarchy.link('D', 'A') // CycleError: Cannot add ancestor as a child`
+
+#### Unlink
+
+`hierarchy.unlink(parent, child) // unlinks child from parent`
+
 `hierarchy.unlink(parent, child) // deletes node without parents`
+
 `hierarchy.unlink(hierarch, hierarch) // unlinking hierarch from itself does nothing`
 
 ### Traversal
@@ -62,17 +75,3 @@ hierarchy.link('H', 'J')
 `hierarchy.parents(node)`
 
 `hierarchy.ancestors(node)`
-
-### Errors
-
-### LoopError
-
-```typescript
-hierarchy.link('A', 'A') // LoopError: Cannot add node to itself
-```
-
-### CycleError
-
-```typescript
-hierarchy.link('D', 'A') // CycleError: Cannot add ancestor as a child
-```

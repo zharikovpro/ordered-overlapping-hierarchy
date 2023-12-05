@@ -76,9 +76,7 @@ export default class OrderedOverlappingHierarchy<Node> {
     child: Node,
     index?: number
   ): OrderedOverlappingHierarchyError | void {
-    if (parent === child) {
-      return new LoopError("Cannot attach node to itself");
-    }
+    if (parent === child) return new LoopError("Cannot attach node to itself");
     if (this.nodes().has(child) && this.descendants(child)?.has(parent)) {
       return new CycleError("Cannot attach ancestor as a child");
     }
@@ -99,7 +97,7 @@ export default class OrderedOverlappingHierarchy<Node> {
   descendants(node: Node): Set<Node> | undefined {
     if (!this.#childrenMap.has(node)) return undefined;
 
-    const children = this.children(node) || [];
+    const children = this.children(node) as Node[];
     const childrenDescendants = children.flatMap((child) =>
       Array.from(this.descendants(child) as Set<Node>)
     );
