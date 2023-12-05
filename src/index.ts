@@ -70,6 +70,10 @@ export default class OrderedOverlappingHierarchy<Node> {
       .forEach(({ parent, child }) => this.detach(parent, child));
   };
 
+  attach2(parent: Node, child: Node, index?: number): OrderedOverlappingHierarchyError | void {
+    return this.attach(child, parent, index)
+  }
+
   // todo: consider attach({ parent, child, index? })
   attach(
     child: Node,
