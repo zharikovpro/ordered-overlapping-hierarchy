@@ -318,11 +318,6 @@ describe("OrderedOverlappingHierarchy", () => {
       expect(family.children("parent2")?.includes(CHILD)).toStrictEqual(true);
     });
 
-    test("Child detached from the only parent still belongs to the hierarchy", () => {
-      family.detach(CHILD, PARENT);
-      expect(family.nodes().has(CHILD)).toStrictEqual(true);
-    });
-
     test("Child detached from the only parent is removed from the hierarchy", () => {
       family.detach(CHILD, PARENT);
       expect(family.nodes().has(CHILD)).toStrictEqual(false);

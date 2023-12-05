@@ -14,10 +14,10 @@ export default class OrderedOverlappingHierarchy<Node> {
   #childrenMap: Map<Node, Array<Node>> = new Map();
 
   #intersection = (a: Set<Node>, b: Set<Node>): Set<Node> =>
-    new Set([...a].filter((x) => b.has(x)));
+    new Set([...a].filter((n) => b.has(n)));
 
-  #filterNodes = (filter: (node: Node) => boolean): Set<Node> =>
-    new Set(Array.from(this.nodes()).filter(filter));
+  #filter = (filter: (node: Node) => boolean): Set<Node> =>
+    new Set([...this.nodes()].filter(filter));
 
   constructor(source: Node | OrderedOverlappingHierarchy<Node>) {
     this.hierarch = source instanceof OrderedOverlappingHierarchy ? source.hierarch : source;
@@ -36,10 +36,14 @@ export default class OrderedOverlappingHierarchy<Node> {
   };
 
   #position = (array: Array<Node>, node: Node, index?: number): void => {
+    if (array.includes(node)) {
+      array.splice(array.indexOf(node), 1);
+    }
     array.splice(index ?? array.length, 0, node);
   };
 
-  #links = (): [Node, Node][] => {
+  #links = (): [Node, Node][] => { // todo: make public and test
+    // todo: consider flatMap
     const links: [Node, Node][] = []
     this.#childrenMap.forEach((children, parent) => {
       children.forEach(child => links.push([parent, child]))
@@ -111,10 +115,10 @@ export default class OrderedOverlappingHierarchy<Node> {
       return error;
     }
 
-    this.#add(child);
     this.#add(parent);
+    this.#add(child);
 
-    this.detach(child, parent);
+    //this.detach(child, parent); // todo:? do not detach, onlly delete element from childrenMap as part of position
 
     this.#position(this.#childrenMap.get(parent) || [], child, index);
 
@@ -123,7 +127,7 @@ export default class OrderedOverlappingHierarchy<Node> {
 
   children(node: Node): Array<Node> | undefined {
     const children = this.#childrenMap.get(node);
-    return children ? Array.from(children) : undefined;
+    return children ? [...children] : undefined;
   }
 
   descendants(node: Node): Set<Node> | undefined {
@@ -139,12 +143,12 @@ export default class OrderedOverlappingHierarchy<Node> {
 
   ancestors = (node: Node): Set<Node> | undefined =>
     this.#childrenMap.has(node)
-      ? this.#filterNodes((n) => !!this.descendants(n)?.has(node))
+      ? this.#filter((n) => !!this.descendants(n)?.has(node))
       : undefined;
 
   parents = (node: Node): Set<Node> | undefined =>
     this.#childrenMap.has(node)
-      ? this.#filterNodes((n) => !!this.children(n)?.includes(node))
+      ? this.#filter((n) => !!this.children(n)?.includes(node))
       : undefined;
 
   detach(node: Node, parent: Node): void {
@@ -154,8 +158,7 @@ export default class OrderedOverlappingHierarchy<Node> {
     );
 
     if (this.parents(node)?.size === 0) {
-      // todo remove from childrenMap correctly
-      //   this.#childrenMap.delete(node);
+      this.#childrenMap.delete(node);
     }
   }
 
