@@ -20,13 +20,13 @@ export default class OrderedOverlappingHierarchy<Node> {
     new Set(Array.from(this.nodes()).filter(filter));
 
   constructor(source: Node | OrderedOverlappingHierarchy<Node>) {
+    this.hierarch = source instanceof OrderedOverlappingHierarchy ? source.hierarch : source;
+    this.#childrenMap.set(this.hierarch, []);
     if (source instanceof OrderedOverlappingHierarchy) {
-      source.descendants().forEach((node) => {
-        this.#childrenMap.set(node, Array.from(source.children(node) || []));
+      source.nodes().forEach((node) => {
+        this.#childrenMap.set(node, Array.from(source.children(node) as Node[]));
       });
     }
-    this.hierarch = source instanceof OrderedOverlappingHierarchy ? source.hierarch : source;
-    this.#add(this.hierarch);
   }
 
   nodes = (): Set<Node> => new Set(this.#childrenMap.keys());
@@ -40,11 +40,11 @@ export default class OrderedOverlappingHierarchy<Node> {
   };
 
   #links = (): [Node, Node][] => {
-    const edges: [Node, Node][] = []
+    const links: [Node, Node][] = []
     this.#childrenMap.forEach((children, parent) => {
-      children.forEach(child => edges.push([parent, child]))
+      children.forEach(child => links.push([parent, child]))
     })
-    return edges
+    return links
   }
 
   #hasDescendant = (parent: Node, child: Node): boolean => !!this.descendants(parent)?.has(child)
@@ -110,43 +110,34 @@ export default class OrderedOverlappingHierarchy<Node> {
 
   // todo: attach(parent, child, index?)
   attach(
-    node: Node,
+    child: Node,
     parent: Node,
     index?: number
   ): OrderedOverlappingHierarchyError | void {
-    if (parent) {
-      const error = this.#validateNewParent(node, parent);
-      if (error) {
-        return error;
-      }
+    const error = this.#validateNewParent(child, parent);
+    if (error) {
+      return error;
     }
 
-    this.#add(node);
+    this.#add(child);
+    this.#add(parent);
 
-    if (parent) {
-      this.#add(parent);
-      this.detach(node, parent);
-    } else {
-      this.parents(node)?.forEach((parent) => this.detach(node, parent));
-    }
+    this.detach(child, parent);
 
-    this.#position(this.#childrenMap.get(parent) as Node[], node, index);
+    this.#position(this.#childrenMap.get(parent) as Node[], child, index);
 
     this.#reduce();
   }
 
   children(node: Node): Array<Node> | undefined {
-      const children = this.#childrenMap.get(node);
-      return children ? Array.from(children) : undefined;
+    const children = this.#childrenMap.get(node);
+    return children ? Array.from(children) : undefined;
   }
 
-  descendants(): Set<Node>;
-  descendants(node: Node): Set<Node> | undefined;
-  descendants(node?: Node): Set<Node> | undefined {
-    if (!node) return this.nodes();
+  descendants(node: Node): Set<Node> | undefined {
     if (!this.#childrenMap.has(node)) return undefined;
 
-    const children = this.children(node) || [];
+    const children = this.children(node) as Node[];
     const childrenDescendants = children.flatMap((child) =>
       Array.from(this.descendants(child) as Set<Node>)
     );
@@ -175,7 +166,7 @@ export default class OrderedOverlappingHierarchy<Node> {
     }
   }
 
-  delete(node: Node): void {
+  delete(node: Node): void { // todo: replace with unlink from the last parent?
     this.#childrenMap.delete(node);
     this.nodes().forEach((parent) => this.detach(node, parent));
   }

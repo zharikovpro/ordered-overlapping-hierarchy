@@ -36,23 +36,23 @@ describe("OrderedOverlappingHierarchy", () => {
     });
 
     test("Has the same nodes", () => {
-      expect(clone.descendants()).toStrictEqual(family.descendants());
+      expect(clone.nodes()).toStrictEqual(family.nodes());
     });
 
     test("Has the same relationships", () => {
-      for (const node of family.descendants()) {
+      for (const node of family.nodes()) {
         expect(clone.parents(node)).toStrictEqual(family.parents(node));
       }
     });
 
     test("Restructuring a clone keeps the source structure intact", () => {
-      const originalNodes = family.descendants();
-      for (const node of clone.descendants()) {
+      const originalNodes = family.nodes();
+      for (const node of clone.nodes()) {
         clone.delete(node);
       }
       clone.attach("New Child", clone.hierarch);
       clone.attach("New Parent", "New Child");
-      expect(originalNodes).toStrictEqual(family.descendants());
+      expect(originalNodes).toStrictEqual(family.nodes());
     });
   });
 
@@ -137,13 +137,12 @@ describe("OrderedOverlappingHierarchy", () => {
       });
 
       test("When attaching ... removes redundant edge A->X", () => {
-        const hierarchy = new OrderedOverlappingHierarchy<string>("A")
+        const hierarchy = new OrderedOverlappingHierarchy<string>("0")
         // A -> B & X
         // C -> X
         // B -> C => transitive reduction
-        hierarchy.attach("B", hierarchy.hierarch);
+        hierarchy.attach("A", hierarchy.hierarch);
         hierarchy.attach("C", hierarchy.hierarch);
-        hierarchy.attach("X", hierarchy.hierarch);
         hierarchy.attach("B", "A");
         hierarchy.attach("X", "A");
         hierarchy.attach("X", "C");
@@ -156,23 +155,23 @@ describe("OrderedOverlappingHierarchy", () => {
 
     test("Adds string node", () => {
       const hierarchy = new OrderedOverlappingHierarchy<string>("relative");
-      expect(hierarchy.descendants()).toStrictEqual(new Set(["relative"]));
+      expect(hierarchy.nodes()).toStrictEqual(new Set(["relative"]));
     });
 
     test("Adds null node", () => {
       const hierarchy = new OrderedOverlappingHierarchy<null>(null);
-      expect(hierarchy.descendants()).toStrictEqual(new Set([null]));
+      expect(hierarchy.nodes()).toStrictEqual(new Set([null]));
     });
 
     test("Adds object node", () => {
       const hierarchy = new OrderedOverlappingHierarchy<object>({});
-      expect(hierarchy.descendants()).toStrictEqual(new Set([{}]));
+      expect(hierarchy.nodes()).toStrictEqual(new Set([{}]));
     });
 
     test("Adding existing node does not change hierarchy", () => {
-      const originalNodes = family.descendants();
+      const originalNodes = family.nodes();
       family.attach(CHILD, family.hierarch);
-      expect(originalNodes).toStrictEqual(family.descendants());
+      expect(originalNodes).toStrictEqual(family.nodes());
     });
 
     test("Attaches node to the parent as a child", () => {
@@ -187,7 +186,7 @@ describe("OrderedOverlappingHierarchy", () => {
 
     test("Attaching node to a non-existing parent also adds parent", () => {
       family.attach(CHILD, "missing");
-      expect(family.descendants()?.has("missing")).toStrictEqual(true);
+      expect(family.nodes()?.has("missing")).toStrictEqual(true);
     });
 
     test("Attaches node to another parent as a child", () => {
@@ -266,13 +265,13 @@ describe("OrderedOverlappingHierarchy", () => {
     });
   });
 
-  describe(".descendants()", () => {
+  describe(".nodes()", () => {
     test("When ancestor is missing, returns undefined", () => {
       expect(family.descendants("missing")).toBeUndefined();
     });
 
     test("When ancestor is undefined, returns all nodes", () => {
-      expect(family.descendants()).toStrictEqual(
+      expect(family.nodes()).toStrictEqual(
         new Set([GRANDPARENT, PARENT, CHILD])
       );
     });
@@ -325,7 +324,7 @@ describe("OrderedOverlappingHierarchy", () => {
 
     test("Child detached from the only parent still belongs to the hierarchy", () => {
       family.detach(CHILD, PARENT);
-      expect(family.descendants().has(CHILD)).toStrictEqual(true);
+      expect(family.nodes().has(CHILD)).toStrictEqual(true);
     });
 
     test("Child detached from the only parent is removed from the hierarchy", () => {
@@ -354,13 +353,13 @@ describe("OrderedOverlappingHierarchy", () => {
 
     test("Hierarchy no longer has removed node", () => {
       family.delete(PARENT);
-      expect(family.descendants().has(PARENT)).toStrictEqual(false);
+      expect(family.nodes().has(PARENT)).toStrictEqual(false);
     });
 
     test("Removing the only node of the hierarchy empties the hierarchy", () => {
       const hierarchy = new OrderedOverlappingHierarchy<string>("orphan");
       hierarchy.delete("orphan");
-      expect(hierarchy.descendants()).toStrictEqual(new Set());
+      expect(hierarchy.nodes()).toStrictEqual(new Set());
     });
   });
 });
