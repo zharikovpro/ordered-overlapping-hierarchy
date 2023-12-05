@@ -14,9 +14,25 @@ describe("OrderedOverlappingHierarchy", () => {
   });
 
   describe("new OverlappingHierarchy(hierarch)", () => {
-    test("Creates hierarchy with a single node", () => {
+    test("Hierarchy with the single node", () => {
       const hierarchy = new OrderedOverlappingHierarchy<string>("");
       expect(hierarchy.hierarch).toStrictEqual("");
+    });
+
+
+    test("String hierarch", () => {
+      const hierarchy = new OrderedOverlappingHierarchy<string>("relative");
+      expect(hierarchy.nodes()).toStrictEqual(new Set(["relative"]));
+    });
+
+    test("Null hierarch", () => {
+      const hierarchy = new OrderedOverlappingHierarchy<null>(null);
+      expect(hierarchy.nodes()).toStrictEqual(new Set([null]));
+    });
+
+    test("Object hierarch", () => {
+      const hierarchy = new OrderedOverlappingHierarchy<object>({});
+      expect(hierarchy.nodes()).toStrictEqual(new Set([{}]));
     });
   });
 
@@ -72,80 +88,19 @@ describe("OrderedOverlappingHierarchy", () => {
   });
 
   describe(".link()", () => {
-    test("Attaching node to itself returns LoopError", () => {
-      expect(family.link(CHILD, CHILD)).toStrictEqual(
-        new LoopError("Cannot attach node to itself")
-      );
-    });
-
-    test("Attaching ancestor as a child returns CycleError", () => {
-      expect(family.link(CHILD, GRANDPARENT)).toStrictEqual(
-        new CycleError("Cannot attach ancestor as a child")
-      );
-    });
-
-    describe("Transitive reduction", () => {
-      // TODO: refactor and add more examples
-      // TODO: https://brunoscheufler.com/blog/2021-12-05-decreasing-graph-complexity-with-transitive-reductions
-      // https://bjpcjp.github.io/pdfs/math/transitive-closure-ADM.pdf
-      // https://vivekseth.com/transitive-reduction/
-      // https://www.semanticscholar.org/paper/The-Transitive-Reduction-of-a-Directed-Graph-Aho-Garey/d0be1e20643e7e15bd4669f1c3ef0c2287852566?p2df
-      // https://github.com/jafingerhut/cljol/blob/master/doc/transitive-reduction-notes.md#computing-the-transitive-reduction-of-a-dag
-      // https://epubs.siam.org/doi/10.1137/0201008
-
-      test("Linking to non-child descendant does not change structure", () => {
-        // todo: compare full structure?
-        expect(family.link(GRANDPARENT, CHILD)).toBeUndefined();
-        expect(family.children(GRANDPARENT)).toStrictEqual([PARENT]);
-        expect(family.parents(CHILD)).toStrictEqual(new Set([PARENT]));
+    describe("Errors", () => {
+      test("Linking itself returns LoopError", () => {
+        expect(family.link(CHILD, CHILD)).toStrictEqual(
+            new LoopError("Cannot link node to itself")
+        );
       });
 
-      test("Linking another ancestor of a child does not change structure", () => {
-        family.link(family.hierarch, "p2");
-        family.link("p2", CHILD);
-        expect(family.link(PARENT, "p2")).toBeUndefined();
-        expect(family.children("p2")).toStrictEqual([CHILD]);
+      test("Linking ancestor as a child returns CycleError", () => {
+        expect(family.link(CHILD, GRANDPARENT)).toStrictEqual(
+            new CycleError("Cannot link ancestor as a child")
+        );
       });
-
-      test("When attaching to sibling, removes redundant parent link", () => {
-        family.link(PARENT, "child2");
-        expect(family.link("child2", CHILD)).toBeUndefined();
-        expect(family.parents(CHILD)).toStrictEqual(new Set(["child2"]));
-      });
-
-      test("When attaching to nibling, removes redundant links", () => {
-        family.link(PARENT, "child2");
-        family.link("child2", "nibling");
-        expect(family.link("nibling", CHILD)).toBeUndefined();
-        expect(family.parents(CHILD)).toStrictEqual(new Set(["nibling"]));
-      });
-
-      test("When connecting sub-graphs with shared node, removes transitive link", () => {
-        const hierarchy = new OrderedOverlappingHierarchy<string>("0");
-        hierarchy.link("0", "A");
-        hierarchy.link("0", "C");
-        hierarchy.link("A", "B");
-        hierarchy.link("A", "X");
-        hierarchy.link("C", "X");
-        expect(hierarchy.link("B", "C")).toBeUndefined();
-        expect(hierarchy.children("A")).toStrictEqual(["B"]);
-      });
-    });
-
-    test("Adds string node", () => {
-      const hierarchy = new OrderedOverlappingHierarchy<string>("relative");
-      expect(hierarchy.nodes()).toStrictEqual(new Set(["relative"]));
-    });
-
-    test("Adds null node", () => {
-      const hierarchy = new OrderedOverlappingHierarchy<null>(null);
-      expect(hierarchy.nodes()).toStrictEqual(new Set([null]));
-    });
-
-    test("Adds object node", () => {
-      const hierarchy = new OrderedOverlappingHierarchy<object>({});
-      expect(hierarchy.nodes()).toStrictEqual(new Set([{}]));
-    });
+    })
 
     test("Adding existing node does not change hierarchy", () => {
       const originalNodes = family.nodes();
@@ -153,22 +108,22 @@ describe("OrderedOverlappingHierarchy", () => {
       expect(originalNodes).toStrictEqual(family.nodes());
     });
 
-    test("Attaches node to the parent as a child", () => {
+    test("Links node to the parent as a child", () => {
       family.link(CHILD, "grandchild");
       expect(family.children(CHILD)).toStrictEqual(["grandchild"]);
     });
 
-    test("Attaching the same child again does not return error", () => {
+    test("Linking the same child again does not return error", () => {
       family.link(CHILD, "grandchild");
       expect(family.link(CHILD, "grandchild")).toBeUndefined();
     });
 
-    test("Attaching node to a non-existing parent also adds parent", () => {
+    test("Linking node to a non-existing parent also adds parent", () => {
       family.link("missing", CHILD);
       expect(family.nodes()?.has("missing")).toStrictEqual(true);
     });
 
-    test("Attaches node to another parent as a child", () => {
+    test("Links node to another parent as a child", () => {
       family.link(GRANDPARENT, "another parent");
       family.link("another parent", CHILD);
       expect(family.children("another parent")?.includes(CHILD)).toStrictEqual(
@@ -176,8 +131,8 @@ describe("OrderedOverlappingHierarchy", () => {
       );
     });
 
-    describe("Ordering", () => {
-      test("New child is attached at the end of the children list by default", () => {
+    describe("Order", () => {
+      test("New child is linked at the end of the children list by default", () => {
         family.link(PARENT, "YOUNGER_CHILD");
         expect(family.children(PARENT)).toStrictEqual([CHILD, "YOUNGER_CHILD"]);
       });
@@ -227,12 +182,12 @@ describe("OrderedOverlappingHierarchy", () => {
         ]);
       });
 
-      test("Index bigger than number of items attaches child at the end", () => {
+      test("Index bigger than number of items links child at the end", () => {
         family.link(PARENT, "LAST", 100);
         expect(family.children(PARENT)).toStrictEqual([CHILD, "LAST"]);
       });
 
-      test("New node is attached at the end of the top level children by default", () => {
+      test("New node is linked at the end of the top level children by default", () => {
         family.link(family.hierarch, "parent2");
         expect(family.children(family.hierarch)).toStrictEqual([
           "parent",
@@ -240,23 +195,60 @@ describe("OrderedOverlappingHierarchy", () => {
         ]);
       });
     });
+
+
+    describe("Transitive reduction", () => {
+      test("Linking to non-child descendant does not change structure", () => {
+        expect(family.link(GRANDPARENT, CHILD)).toBeUndefined();
+        expect(family.children(GRANDPARENT)).toStrictEqual([PARENT]);
+        expect(family.parents(CHILD)).toStrictEqual(new Set([PARENT]));
+      });
+
+      test("Linking another ancestor of a child does not change structure", () => {
+        family.link(family.hierarch, "p2");
+        family.link("p2", CHILD);
+        expect(family.link(PARENT, "p2")).toBeUndefined();
+        expect(family.children("p2")).toStrictEqual([CHILD]);
+      });
+
+      test("When Linking to sibling, removes redundant parent link", () => {
+        family.link(PARENT, "child2");
+        expect(family.link("child2", CHILD)).toBeUndefined();
+        expect(family.parents(CHILD)).toStrictEqual(new Set(["child2"]));
+      });
+
+      test("When Linking to nibling, removes redundant links", () => {
+        family.link(PARENT, "child2");
+        family.link("child2", "nibling");
+        expect(family.link("nibling", CHILD)).toBeUndefined();
+        expect(family.parents(CHILD)).toStrictEqual(new Set(["nibling"]));
+      });
+
+      test("When connecting sub-graphs with shared node, removes transitive link", () => {
+        const hierarchy = new OrderedOverlappingHierarchy<string>("0");
+        hierarchy.link("0", "A");
+        hierarchy.link("0", "C");
+        hierarchy.link("A", "B");
+        hierarchy.link("A", "X");
+        hierarchy.link("C", "X");
+        expect(hierarchy.link("B", "C")).toBeUndefined();
+        expect(hierarchy.children("A")).toStrictEqual(["B"]);
+      });
+    });
   });
 
   describe(".nodes()", () => {
-    test("When ancestor is missing, returns undefined", () => {
-      expect(family.descendants("missing")).toBeUndefined();
+    test("Returns set of all nodes", () => {
+      expect(family.nodes()).toStrictEqual(new Set([GRANDPARENT, PARENT, CHILD]));
     });
+  });
 
-    test("When ancestor is undefined, returns all nodes", () => {
-      expect(family.nodes()).toStrictEqual(
-        new Set([GRANDPARENT, PARENT, CHILD])
-      );
-    });
-
-    test("Returns descendants for the ancestor", () => {
-      expect(family.descendants(GRANDPARENT)).toStrictEqual(
-        new Set([PARENT, CHILD])
-      );
+  describe(".links()", () => {
+    test("Returns set of all links", () => {
+      expect(family.links()).toStrictEqual(new Set([
+        { parent: GRANDPARENT, child: PARENT, index: 0 },
+        { parent: PARENT, child: CHILD, index: 0 },
+      ]));
     });
   });
 
@@ -265,9 +257,21 @@ describe("OrderedOverlappingHierarchy", () => {
       expect(family.ancestors("missing")).toBeUndefined();
     });
 
-    test("Returns ancestors", () => {
+    test("Returns set of ancestors", () => {
       expect(family.ancestors(CHILD)).toStrictEqual(
         new Set([GRANDPARENT, PARENT])
+      );
+    });
+  });
+
+  describe(".descendants()", () => {
+    test("Returns undefined for non-member", () => {
+      expect(family.descendants("missing")).toBeUndefined();
+    });
+
+    test("Returns set of descendants", () => {
+      expect(family.descendants(GRANDPARENT)).toStrictEqual(
+          new Set([PARENT, CHILD])
       );
     });
   });
@@ -286,25 +290,25 @@ describe("OrderedOverlappingHierarchy", () => {
     });
   });
 
-  describe(".detach()", () => {
+  describe(".unlink()", () => {
     test("Unlinking hierarch from itself has no effect", () => {
       family.unlink(GRANDPARENT, GRANDPARENT);
       expect(family.hierarch).toStrictEqual(GRANDPARENT);
     });
 
-    test("Parent no longer has detached child", () => {
+    test("Parent no longer has unlinked child", () => {
       family.unlink(PARENT, CHILD);
       expect(family.children(PARENT)?.includes(CHILD)).toStrictEqual(false);
     });
 
-    test("Detached child still belongs to another parent", () => {
+    test("Child unlinked from one parent still belongs to another parent", () => {
       family.link(family.hierarch, "parent2");
       family.link("parent2", CHILD);
       family.unlink(PARENT, CHILD);
       expect(family.children("parent2")?.includes(CHILD)).toStrictEqual(true);
     });
 
-    test("Child detached from the only parent is removed from the hierarchy", () => {
+    test("Child unlinked from the only parent is removed from the hierarchy", () => {
       family.unlink(PARENT, CHILD);
       expect(family.nodes().has(CHILD)).toStrictEqual(false);
     });

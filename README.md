@@ -50,9 +50,9 @@ hierarchy.link('H', 'J')
 
 `hierarchy.link(parent, child, index) // at specific index`
 
-`hierarchy.link('A', 'A') // LoopError: Cannot add node to itself`
+`hierarchy.link('A', 'A') // LoopError: Cannot link node to itself`
 
-`hierarchy.link('D', 'A') // CycleError: Cannot add ancestor as a child`
+`hierarchy.link('D', 'A') // CycleError: Cannot link ancestor as a child`
 
 #### Unlink
 
@@ -64,9 +64,11 @@ hierarchy.link('H', 'J')
 
 ### Traversal
 
+`hierarchy.hierarch`
+
 `hierarchy.nodes()`
 
-`hierarchy.hierarch`
+`hierarchy.links()`
 
 `hierarchy.children(node)`
 

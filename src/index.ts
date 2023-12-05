@@ -9,7 +9,6 @@ export class LoopError extends OrderedOverlappingHierarchyError {}
 export class CycleError extends OrderedOverlappingHierarchyError {}
 
 export default class OrderedOverlappingHierarchy<Node> {
-  // TODO: consider using object type Link = { parent: Node, child: Node }
   readonly hierarch: Node;
   #childrenMap: Map<Node, Array<Node>> = new Map();
 
@@ -38,11 +37,10 @@ export default class OrderedOverlappingHierarchy<Node> {
     array.splice(index ?? array.length, 0, node);
   };
 
-  #links = (): { parent: Node; child: Node }[] => {
-    // todo: make public and test, better to return link object with parent, child and index fields for complete representation
-    const links: { parent: Node; child: Node }[] = [];
+  links = (): Set<{ parent: Node; child: Node; index: number }> => {
+    const links = new Set<{ parent: Node; child: Node; index: number }>();
     this.#childrenMap.forEach((children, parent) => {
-      children.forEach((child) => links.push({ parent, child }));
+      children.forEach((child, index) => links.add({ parent, child, index }));
     });
     return links;
   };
@@ -63,22 +61,21 @@ export default class OrderedOverlappingHierarchy<Node> {
   };
 
   #reduce = (): void => {
-    this.#links()
+    [...this.links()]
       .filter(this.#isRedundantLink)
       .forEach(({ parent, child }) => this.unlink(parent, child));
   };
 
   nodes = (): Set<Node> => new Set(this.#childrenMap.keys());
 
-  // todo: consider link(link: { parent, child, index? })
   link(
     parent: Node,
     child: Node,
     index?: number
   ): OrderedOverlappingHierarchyError | void {
-    if (parent === child) return new LoopError("Cannot attach node to itself");
+    if (parent === child) return new LoopError("Cannot link node to itself");
     if (this.nodes().has(child) && this.descendants(child)?.has(parent)) {
-      return new CycleError("Cannot attach ancestor as a child");
+      return new CycleError("Cannot link ancestor as a child");
     }
 
     this.#add(parent);
