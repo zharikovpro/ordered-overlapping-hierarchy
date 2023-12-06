@@ -64,16 +64,16 @@ hierarchy.link('H', 'J')
 
 ### Traversal
 
-`hierarchy.hierarch`
+`#hierarch`
 
-`hierarchy.nodes()`
+`#nodes()`
 
-`hierarchy.links()`
+`#links()`
 
-`hierarchy.children(node)`
+`#children(node)`
 
-`hierarchy.descendants(node)`
+`#descendants(node)`
 
-`hierarchy.parents(node)`
+`#parents(node)`
 
-`hierarchy.ancestors(node)`
+`#ancestors(node)`

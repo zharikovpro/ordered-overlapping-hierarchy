@@ -74,7 +74,7 @@ export default class OrderedOverlappingHierarchy<Node> {
     parent: Node,
     child: Node,
     index?: number
-  ): OrderedOverlappingHierarchyError | void {
+  ): LoopError | CycleError | void {
     // TODO: return Link with effective index
     if (parent === child) return new LoopError("Cannot link node to itself");
     if (this.nodes().has(child) && this.descendants(child)?.has(parent)) {
