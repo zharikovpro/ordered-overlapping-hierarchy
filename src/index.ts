@@ -84,7 +84,7 @@ export default class OrderedOverlappingHierarchy<Node> {
       return new CycleError("Cannot link ancestor as a child");
     }
 
-    this.#add(parent);
+    this.link({ parent: this.hierarch, child: parent })
     this.#add(child);
 
     const effectiveIndex = this.#position(

@@ -125,6 +125,11 @@ describe("OrderedOverlappingHierarchy", () => {
       expect(originalNodes).toStrictEqual(family.nodes());
     });
 
+    test("When parent doesn not belongs to the hierarchy, links it to the hierarch", () => {
+      familyLink("ORPHAN", CHILD);
+      expect(family.parents("ORPHAN")).toStrictEqual(new Set([family.hierarch]));
+    });
+
     test("Links node to the parent as a child", () => {
       familyLink(CHILD, "grandchild");
       expect(family.children(CHILD)).toStrictEqual(["grandchild"]);
