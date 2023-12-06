@@ -56,11 +56,11 @@ hierarchy.link('H', 'J')
 
 #### Unlink
 
-`hierarchy.unlink(parent, child) // unlinks child from parent`
+`hierarchy.unlink({ parent, child }) // unlinks child from parent`
 
-`hierarchy.unlink(parent, child) // deletes node without parents`
+`hierarchy.unlink({ parent, child }) // deletes node without parents`
 
-`hierarchy.unlink(hierarch, hierarch) // unlinking hierarch from itself does nothing`
+`hierarchy.unlink({ parent: hierarchy.hierarch, child: hierarchy.hierarch }) // no-op`
 
 ### Traversal
 

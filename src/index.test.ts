@@ -59,9 +59,9 @@ describe("OrderedOverlappingHierarchy", () => {
 
     test("Restructuring a clone keeps the source structure intact", () => {
       const originalNodes = family.nodes();
-      for (const node of clone.nodes()) {
-        for (const parent of clone.parents(node) as Set<string>) {
-          clone.unlink(parent, node);
+      for (const child of clone.nodes()) {
+        for (const parent of clone.parents(child) as Set<string>) {
+          clone.unlink({ parent, child });
         }
       }
       clone.link(clone.hierarch, "New Child");
@@ -300,12 +300,12 @@ describe("OrderedOverlappingHierarchy", () => {
 
   describe(".unlink()", () => {
     test("Unlinking hierarch from itself has no effect", () => {
-      family.unlink(GRANDPARENT, GRANDPARENT);
+      family.unlink({ parent: GRANDPARENT, child: GRANDPARENT });
       expect(family.hierarch).toStrictEqual(GRANDPARENT);
     });
 
     test("Parent no longer has unlinked child", () => {
-      family.unlink(PARENT, CHILD);
+      family.unlink({ parent: PARENT, child: CHILD });
       expect(family.children(PARENT)?.includes(CHILD)).toStrictEqual(false);
     });
 
@@ -313,12 +313,12 @@ describe("OrderedOverlappingHierarchy", () => {
       // 0 --> parent & parent2 --> child
       family.link(family.hierarch, "parent2");
       family.link("parent2", CHILD);
-      family.unlink(PARENT, CHILD);
+      family.unlink({ parent: PARENT, child: CHILD });
       expect(family.children("parent2")?.includes(CHILD)).toStrictEqual(true);
     });
 
     test("Child unlinked from the only parent is removed from the hierarchy", () => {
-      family.unlink(PARENT, CHILD);
+      family.unlink({ parent: PARENT, child: CHILD });
       expect(family.nodes().has(CHILD)).toStrictEqual(false);
     });
   });

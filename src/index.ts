@@ -56,19 +56,17 @@ export default class OrderedOverlappingHierarchy<Node> {
     return links;
   };
 
-  #hasDescendant = (parent: Node, child: Node): boolean =>
+  #hasDescendant = ({ parent, child }: Direction<Node>): boolean =>
     !!this.descendants(parent)?.has(child);
 
-  #isRedundantLink = ({ parent, child }: Direction<Node>): boolean => {
+  #isTransitiveLink = (direction: Direction<Node>): boolean => {
     const potentialReduction = new OrderedOverlappingHierarchy(this);
-    potentialReduction.unlink(parent, child);
-    return potentialReduction.#hasDescendant(parent, child);
+    potentialReduction.unlink(direction);
+    return potentialReduction.#hasDescendant(direction);
   };
 
   #reduce = (): void => {
-    [...this.links()]
-      .filter(this.#isRedundantLink)
-      .forEach(({ parent, child }) => this.unlink(parent, child));
+    [...this.links()].filter(this.#isTransitiveLink).forEach(this.unlink, this);
   };
 
   nodes = (): Set<Node> => new Set(this.#childrenMap.keys());
@@ -78,7 +76,8 @@ export default class OrderedOverlappingHierarchy<Node> {
     parent: Node,
     child: Node,
     index?: number
-  ): OrderedOverlappingHierarchyError | void { // TODO: return Link with effective index
+  ): OrderedOverlappingHierarchyError | void {
+    // TODO: return Link with effective index
     if (parent === child) return new LoopError("Cannot link node to itself");
     if (this.nodes().has(child) && this.descendants(child)?.has(parent)) {
       return new CycleError("Cannot link ancestor as a child");
@@ -118,8 +117,7 @@ export default class OrderedOverlappingHierarchy<Node> {
       ? this.#filter((n) => !!this.children(n)?.includes(node))
       : undefined;
 
-  unlink(parent: Node, child: Node): void {
-    // TODO: consider using Direction/Link type to enable fluid functional pipelines API
+  unlink({ parent, child }: Direction<Node>): void {
     this.#childrenMap.set(
       parent,
       this.children(parent)?.filter((item) => item !== child) || []
