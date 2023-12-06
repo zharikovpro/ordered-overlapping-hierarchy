@@ -39,11 +39,13 @@ export default class OrderedOverlappingHierarchy<Node> {
     this.#childrenMap.set(node, this.children(node) || []);
   };
 
-  #position = (array: Array<Node>, node: Node, index?: number): void => {
+  #position = (array: Array<Node>, node: Node, index?: number): number => {
+    const effectiveIndex = index ?? array.length;
     if (array.includes(node)) {
       array.splice(array.indexOf(node), 1);
     }
-    array.splice(index ?? array.length, 0, node);
+    array.splice(effectiveIndex, 0, node);
+    return effectiveIndex;
   };
 
   links = (): Set<Link<Node>> => {
@@ -69,13 +71,14 @@ export default class OrderedOverlappingHierarchy<Node> {
 
   nodes = (): Set<Node> => new Set(this.#childrenMap.keys());
 
-  link(
-    // TODO: consider using Link type to enable fluid functional pipelines API
-    parent: Node,
-    child: Node,
-    index?: number
-  ): LoopError | CycleError | void {
-    // TODO: return Link with effective index
+  link({
+    parent,
+    child,
+    index,
+  }: Direction<Node> & { index?: number }):
+    | Link<Node>
+    | LoopError
+    | CycleError {
     if (parent === child) return new LoopError("Cannot link node to itself");
     if (this.nodes().has(child) && this.descendants(child)?.has(parent)) {
       return new CycleError("Cannot link ancestor as a child");
@@ -84,9 +87,15 @@ export default class OrderedOverlappingHierarchy<Node> {
     this.#add(parent);
     this.#add(child);
 
-    this.#position(this.#childrenMap.get(parent) as Node[], child, index);
+    const effectiveIndex = this.#position(
+      this.#childrenMap.get(parent) as Node[],
+      child,
+      index
+    );
 
     this.#reduce();
+
+    return { parent, child, index: effectiveIndex };
   }
 
   children(node: Node): Array<Node> | undefined {

@@ -1,13 +1,25 @@
 import OrderedOverlappingHierarchy, { CycleError, LoopError } from "./index";
 
+interface Link {
+  parent: string;
+  child: string;
+  index: number;
+}
+
 const CHILD = "child";
 const PARENT = "parent";
 const GRANDPARENT = "grandparent";
 
 describe("OrderedOverlappingHierarchy", () => {
-  const familyLink = (parent: string, child: string, index?: number): void | LoopError | CycleError => {
-    return family.link(parent, child, index);
-  }
+  const familyLink = (
+    parent: string,
+    child: string,
+    index?: number
+  ): Link | LoopError | CycleError => {
+    return family.link({ parent, child, index });
+  };
+
+  // todo: verifyLink(hierarchy, link) -> checks that parent has child at index; child has parent; links has exact link; hierarchy has parent; hierarchy has child;
 
   let family: OrderedOverlappingHierarchy<string>;
 
@@ -68,8 +80,8 @@ describe("OrderedOverlappingHierarchy", () => {
           clone.unlink({ parent, child });
         }
       }
-      clone.link(clone.hierarch, "New Child");
-      clone.link("New Child", "New Parent");
+      clone.link({ parent: clone.hierarch, child: "New Child" });
+      clone.link({ parent: "New Child", child: "New Parent" });
       expect(originalNodes).toStrictEqual(family.nodes());
     });
   });
@@ -118,9 +130,9 @@ describe("OrderedOverlappingHierarchy", () => {
       expect(family.children(CHILD)).toStrictEqual(["grandchild"]);
     });
 
-    test("Linking the same child again does not return error", () => {
+    test("Linking the same child again returns link", () => {
       familyLink(CHILD, "grandchild");
-      expect(familyLink(CHILD, "grandchild")).toBeUndefined();
+      expect((familyLink(CHILD, "grandchild") as Link).index).toBeDefined();
     });
 
     test("Linking node to a non-existing parent also adds parent", () => {
@@ -138,7 +150,8 @@ describe("OrderedOverlappingHierarchy", () => {
 
     describe("Order", () => {
       test("New child is linked at the end of the children list by default", () => {
-        familyLink(PARENT, "YOUNGER_CHILD");
+        const link = familyLink(PARENT, "YOUNGER_CHILD") as Link;
+        expect(link.index).toStrictEqual(1);
         expect(family.children(PARENT)).toStrictEqual([CHILD, "YOUNGER_CHILD"]);
       });
 
@@ -204,7 +217,7 @@ describe("OrderedOverlappingHierarchy", () => {
 
     describe("Transitive reduction", () => {
       test("Linking to non-child descendant does not change structure", () => {
-        expect(familyLink(GRANDPARENT, CHILD)).toBeUndefined();
+        familyLink(GRANDPARENT, CHILD);
         expect(family.children(GRANDPARENT)).toStrictEqual([PARENT]);
         expect(family.parents(CHILD)).toStrictEqual(new Set([PARENT]));
       });
@@ -212,20 +225,20 @@ describe("OrderedOverlappingHierarchy", () => {
       test("Linking another ancestor of a child does not change structure", () => {
         familyLink(family.hierarch, "p2");
         familyLink("p2", CHILD);
-        expect(familyLink(PARENT, "p2")).toBeUndefined();
+        familyLink(PARENT, "p2");
         expect(family.children("p2")).toStrictEqual([CHILD]);
       });
 
       test("When Linking to sibling, removes redundant parent link", () => {
         familyLink(PARENT, "child2");
-        expect(familyLink("child2", CHILD)).toBeUndefined();
+        familyLink("child2", CHILD);
         expect(family.parents(CHILD)).toStrictEqual(new Set(["child2"]));
       });
 
       test("When Linking to nibling, removes redundant links", () => {
         familyLink(PARENT, "child2");
         familyLink("child2", "nibling");
-        expect(familyLink("nibling", CHILD)).toBeUndefined();
+        familyLink("nibling", CHILD);
         expect(family.parents(CHILD)).toStrictEqual(new Set(["nibling"]));
       });
 
@@ -234,12 +247,12 @@ describe("OrderedOverlappingHierarchy", () => {
         // 0 --> A & C
         // A --> B & X
         // C --> X
-        hierarchy.link("0", "A");
-        hierarchy.link("0", "C");
-        hierarchy.link("A", "B");
-        hierarchy.link("A", "X");
-        hierarchy.link("C", "X");
-        expect(hierarchy.link("B", "C")).toBeUndefined();
+        hierarchy.link({ parent: "0", child: "A" });
+        hierarchy.link({ parent: "0", child: "C" });
+        hierarchy.link({ parent: "A", child: "B" });
+        hierarchy.link({ parent: "A", child: "X" });
+        hierarchy.link({ parent: "C", child: "X" });
+        hierarchy.link({ parent: "B", child: "C" });
         expect(hierarchy.children("A")).toStrictEqual(["B"]);
       });
     });
