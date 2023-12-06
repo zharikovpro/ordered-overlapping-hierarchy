@@ -46,13 +46,13 @@ hierarchy.link('H', 'J')
 
 `hierarchy.link(...)` automatically removes transitive links.
 
-`hierarchy.link(parent, child) // as last child`
+`hierarchy.link({ parent, child }) // as last child`
 
-`hierarchy.link(parent, child, index) // at specific index`
+`hierarchy.link({ parent, child, index }) // at specific index`
 
-`hierarchy.link('A', 'A') // LoopError: Cannot link node to itself`
+`hierarchy.link({ parent: 'A', child: 'A' }) // LoopError: Cannot link node to itself`
 
-`hierarchy.link('D', 'A') // CycleError: Cannot link ancestor as a child`
+`hierarchy.link({ parent: 'D', child: 'A' }) // CycleError: Cannot link ancestor as a child`
 
 #### Unlink
 
