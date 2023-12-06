@@ -8,6 +8,7 @@ describe("OrderedOverlappingHierarchy", () => {
   let family: OrderedOverlappingHierarchy<string>;
 
   beforeEach(() => {
+    // grandparent --> parent --> child
     family = new OrderedOverlappingHierarchy(GRANDPARENT);
     family.link(GRANDPARENT, PARENT);
     family.link(PARENT, CHILD);
@@ -18,7 +19,6 @@ describe("OrderedOverlappingHierarchy", () => {
       const hierarchy = new OrderedOverlappingHierarchy<string>("");
       expect(hierarchy.hierarch).toStrictEqual("");
     });
-
 
     test("String hierarch", () => {
       const hierarchy = new OrderedOverlappingHierarchy<string>("relative");
@@ -76,6 +76,7 @@ describe("OrderedOverlappingHierarchy", () => {
     });
 
     test("Returns children ordered from older to younger", () => {
+      // grandparent --> parent --> child & younger_child
       family.link(PARENT, "YOUNGER_CHILD");
       expect(family.children(PARENT)).toStrictEqual([CHILD, "YOUNGER_CHILD"]);
     });
@@ -91,16 +92,16 @@ describe("OrderedOverlappingHierarchy", () => {
     describe("Errors", () => {
       test("Linking itself returns LoopError", () => {
         expect(family.link(CHILD, CHILD)).toStrictEqual(
-            new LoopError("Cannot link node to itself")
+          new LoopError("Cannot link node to itself")
         );
       });
 
       test("Linking ancestor as a child returns CycleError", () => {
         expect(family.link(CHILD, GRANDPARENT)).toStrictEqual(
-            new CycleError("Cannot link ancestor as a child")
+          new CycleError("Cannot link ancestor as a child")
         );
       });
-    })
+    });
 
     test("Adding existing node does not change hierarchy", () => {
       const originalNodes = family.nodes();
@@ -138,6 +139,7 @@ describe("OrderedOverlappingHierarchy", () => {
       });
 
       test("Existing child retains index by default", () => {
+        // parent --> middle & younger & child
         family.link(PARENT, "MIDDLE_CHILD");
         family.link(PARENT, "YOUNGER_CHILD");
         family.link(PARENT, CHILD);
@@ -196,7 +198,6 @@ describe("OrderedOverlappingHierarchy", () => {
       });
     });
 
-
     describe("Transitive reduction", () => {
       test("Linking to non-child descendant does not change structure", () => {
         expect(family.link(GRANDPARENT, CHILD)).toBeUndefined();
@@ -226,6 +227,9 @@ describe("OrderedOverlappingHierarchy", () => {
 
       test("When connecting sub-graphs with shared node, removes transitive link", () => {
         const hierarchy = new OrderedOverlappingHierarchy<string>("0");
+        // 0 --> A & C
+        // A --> B & X
+        // C --> X
         hierarchy.link("0", "A");
         hierarchy.link("0", "C");
         hierarchy.link("A", "B");
@@ -239,16 +243,20 @@ describe("OrderedOverlappingHierarchy", () => {
 
   describe(".nodes()", () => {
     test("Returns set of all nodes", () => {
-      expect(family.nodes()).toStrictEqual(new Set([GRANDPARENT, PARENT, CHILD]));
+      expect(family.nodes()).toStrictEqual(
+        new Set([GRANDPARENT, PARENT, CHILD])
+      );
     });
   });
 
   describe(".links()", () => {
     test("Returns set of all links", () => {
-      expect(family.links()).toStrictEqual(new Set([
-        { parent: GRANDPARENT, child: PARENT, index: 0 },
-        { parent: PARENT, child: CHILD, index: 0 },
-      ]));
+      expect(family.links()).toStrictEqual(
+        new Set([
+          { parent: GRANDPARENT, child: PARENT, index: 0 },
+          { parent: PARENT, child: CHILD, index: 0 },
+        ])
+      );
     });
   });
 
@@ -271,7 +279,7 @@ describe("OrderedOverlappingHierarchy", () => {
 
     test("Returns set of descendants", () => {
       expect(family.descendants(GRANDPARENT)).toStrictEqual(
-          new Set([PARENT, CHILD])
+        new Set([PARENT, CHILD])
       );
     });
   });
@@ -302,6 +310,7 @@ describe("OrderedOverlappingHierarchy", () => {
     });
 
     test("Child unlinked from one parent still belongs to another parent", () => {
+      // 0 --> parent & parent2 --> child
       family.link(family.hierarch, "parent2");
       family.link("parent2", CHILD);
       family.unlink(PARENT, CHILD);

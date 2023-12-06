@@ -1,4 +1,4 @@
-# Ordered overlapping hierarchy
+# OOH | Ordered Overlapping Hierarchy
 
 Library for modeling [overlapping hierarchy](https://en.wikipedia.org/wiki/Hierarchy#Degree_of_branching), in which nodes can have multiple parents and children are ordered.
 

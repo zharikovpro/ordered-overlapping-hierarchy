@@ -8,6 +8,17 @@ class OrderedOverlappingHierarchyError extends Error {
 export class LoopError extends OrderedOverlappingHierarchyError {}
 export class CycleError extends OrderedOverlappingHierarchyError {}
 
+interface Direction<T> {
+  // TODO: consider using for args to enable fluid functional API
+  parent: T;
+  child: T;
+}
+
+interface Link<T> extends Direction<T> {
+  // TODO: consider using for args to enable fluid functional API
+  index: number;
+}
+
 export default class OrderedOverlappingHierarchy<Node> {
   readonly hierarch: Node;
   #childrenMap: Map<Node, Array<Node>> = new Map();
@@ -37,8 +48,8 @@ export default class OrderedOverlappingHierarchy<Node> {
     array.splice(index ?? array.length, 0, node);
   };
 
-  links = (): Set<{ parent: Node; child: Node; index: number }> => {
-    const links = new Set<{ parent: Node; child: Node; index: number }>();
+  links = (): Set<Link<Node>> => {
+    const links = new Set<Link<Node>>();
     this.#childrenMap.forEach((children, parent) => {
       children.forEach((child, index) => links.add({ parent, child, index }));
     });
@@ -48,13 +59,7 @@ export default class OrderedOverlappingHierarchy<Node> {
   #hasDescendant = (parent: Node, child: Node): boolean =>
     !!this.descendants(parent)?.has(child);
 
-  #isRedundantLink = ({
-    parent,
-    child,
-  }: {
-    parent: Node;
-    child: Node;
-  }): boolean => {
+  #isRedundantLink = ({ parent, child }: Direction<Node>): boolean => {
     const potentialReduction = new OrderedOverlappingHierarchy(this);
     potentialReduction.unlink(parent, child);
     return potentialReduction.#hasDescendant(parent, child);
@@ -69,10 +74,11 @@ export default class OrderedOverlappingHierarchy<Node> {
   nodes = (): Set<Node> => new Set(this.#childrenMap.keys());
 
   link(
+    // TODO: consider using Link type to enable fluid functional pipelines API
     parent: Node,
     child: Node,
     index?: number
-  ): OrderedOverlappingHierarchyError | void {
+  ): OrderedOverlappingHierarchyError | void { // TODO: return Link with effective index
     if (parent === child) return new LoopError("Cannot link node to itself");
     if (this.nodes().has(child) && this.descendants(child)?.has(parent)) {
       return new CycleError("Cannot link ancestor as a child");
@@ -113,6 +119,7 @@ export default class OrderedOverlappingHierarchy<Node> {
       : undefined;
 
   unlink(parent: Node, child: Node): void {
+    // TODO: consider using Direction/Link type to enable fluid functional pipelines API
     this.#childrenMap.set(
       parent,
       this.children(parent)?.filter((item) => item !== child) || []
