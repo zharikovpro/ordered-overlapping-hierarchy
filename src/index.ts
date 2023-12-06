@@ -9,13 +9,11 @@ export class LoopError extends OrderedOverlappingHierarchyError {}
 export class CycleError extends OrderedOverlappingHierarchyError {}
 
 interface Direction<T> {
-  // TODO: consider using for args to enable fluid functional API
   parent: T;
   child: T;
 }
 
 interface Link<T> extends Direction<T> {
-  // TODO: consider using for args to enable fluid functional API
   index: number;
 }
 
