@@ -15,8 +15,8 @@ describe("OrderedOverlappingHierarchy", () => {
     parent: string,
     child: string,
     index?: number
-  ): Relationship | LoopError | CycleError => {
-    return family.relate({ parent, child, index });
+  ): Array<Relationship | LoopError | CycleError> => {
+    return family.relate([{ parent, child, index }]);
   };
 
   // todo: verifyRelationship(hierarchy, relationship) -> checks that parent has child at index; child has parent; relationships has exact relationship; hierarchy has parent; hierarchy has child;
@@ -76,8 +76,8 @@ describe("OrderedOverlappingHierarchy", () => {
     test("Restructuring a clone keeps the source structure intact", () => {
       const originalMembers = family.members();
       clone.relationships().forEach(clone.unrelate, clone);
-      clone.relate({ parent: clone.hierarch, child: "New Child" });
-      clone.relate({ parent: "New Child", child: "New Parent" });
+      clone.relate([{ parent: clone.hierarch, child: "New Child" }]);
+      clone.relate([{ parent: "New Child", child: "New Parent" }]);
       expect(family.members()).toStrictEqual(originalMembers);
     });
   });
@@ -103,13 +103,13 @@ describe("OrderedOverlappingHierarchy", () => {
   describe(".relate()", () => {
     describe("Errors", () => {
       test("Relating itself returns LoopError", () => {
-        expect(familyRelationship(CHILD, CHILD)).toStrictEqual(
+        expect(familyRelationship(CHILD, CHILD)[0]).toStrictEqual(
           new LoopError("Cannot relate member to itself")
         );
       });
 
       test("Relating ancestor as a child returns CycleError", () => {
-        expect(familyRelationship(CHILD, GRANDPARENT)).toStrictEqual(
+        expect(familyRelationship(CHILD, GRANDPARENT)[0]).toStrictEqual(
           new CycleError("Cannot relate ancestor as a child")
         );
       });
@@ -136,7 +136,7 @@ describe("OrderedOverlappingHierarchy", () => {
     test("Relating the same child again returns the same relationship", () => {
       familyRelationship(CHILD, "grandchild");
       expect(
-        (familyRelationship(CHILD, "grandchild") as Relationship).index
+        (familyRelationship(CHILD, "grandchild")[0] as Relationship).index
       ).toBeDefined();
     });
 
@@ -155,40 +155,22 @@ describe("OrderedOverlappingHierarchy", () => {
 
     test("Batch relating 1000 members takes less than a second", () => {
       const hierarchy = new OrderedOverlappingHierarchy<string>("0");
-      const relationships: { parent: string, child: string }[] = [];
+      const relationships: { parent: string; child: string }[] = [];
       for (let i = 0; i < 1000; i++) {
-        relationships.push({ parent: hierarchy.hierarch, child: i.toString() })
+        relationships.push({ parent: hierarchy.hierarch, child: i.toString() });
       }
       const batchStart = Date.now();
-      hierarchy.batchRelate(relationships);
+      hierarchy.relate(relationships);
       const batchDuration = Date.now() - batchStart;
-      console.log(`BATCH took ${batchDuration} ms`)
-      expect(batchDuration).toBeLessThan(1000); // 224312 - 3m
+      expect(batchDuration).toBeLessThan(1000);
     });
-
-    // todo describe Performance //
-    // todo create matrix of Width * Depth relationships; add extra links to check for reduction
-    // test("Relating 1000th member takes less than a second", () => {
-    // TODO: start with batch
-    //   const hierarchy = new OrderedOverlappingHierarchy<string>("0");
-    //   const batchStart = Date.now();
-    //   for (let i = 0; i < 1000; i++) {
-    //     const relateStart = Date.now();
-    //     hierarchy.relate({ parent: hierarchy.hierarch, child: i.toString() });
-    //     const relateDuration = Date.now() - relateStart;
-    //     console.log(`relate ${i} took ${relateDuration} ms`)
-    //   }
-    //   const batchDuration = Date.now() - batchStart;
-    //   console.log(`BATCH took ${batchDuration} ms`)
-    //   expect(batchDuration).toBeLessThan(1000); // 224312 - 3m
-    // });
 
     describe("Order", () => {
       test("New child is related as the last by default", () => {
         const relationship = familyRelationship(
           PARENT,
           "YOUNGER_CHILD"
-        ) as Relationship;
+        )[0] as Relationship;
         expect(relationship.index).toStrictEqual(1);
         expect(family.children(PARENT)).toStrictEqual([CHILD, "YOUNGER_CHILD"]);
       });
@@ -255,28 +237,28 @@ describe("OrderedOverlappingHierarchy", () => {
 
     describe("Transitive reduction", () => {
       test("Relating to non-child descendant does not change structure", () => {
-        family.batchRelate([{ parent: GRANDPARENT, child: CHILD }])
+        family.relate([{ parent: GRANDPARENT, child: CHILD }]);
         expect(family.children(GRANDPARENT)).toStrictEqual([PARENT]);
         expect(family.parents(CHILD)).toStrictEqual(new Set([PARENT]));
       });
 
       test("Relating another ancestor of a child does not change structure", () => {
-        family.batchRelate([{ parent: family.hierarch, child: "p2" }])
-        family.batchRelate([{ parent: "p2", child: CHILD }])
-        family.batchRelate([{ parent: PARENT, child: "p2" }])
+        family.relate([{ parent: family.hierarch, child: "p2" }]);
+        family.relate([{ parent: "p2", child: CHILD }]);
+        family.relate([{ parent: PARENT, child: "p2" }]);
         expect(family.children("p2")).toStrictEqual([CHILD]);
       });
 
       test("When relating to sibling, removes transitive parent relationship", () => {
-        family.batchRelate([{ parent: PARENT, child: "child2" }])
-        family.batchRelate([{ parent: "child2", child: CHILD }])
+        family.relate([{ parent: PARENT, child: "child2" }]);
+        family.relate([{ parent: "child2", child: CHILD }]);
         expect(family.parents(CHILD)).toStrictEqual(new Set(["child2"]));
       });
 
       test("When relating to nibling, removes transitive relationship", () => {
-        family.batchRelate([{ parent: PARENT, child: "child2" }])
-        family.batchRelate([{ parent: "child2", child: "nibling" }])
-        family.batchRelate([{ parent: "nibling", child: CHILD }])
+        family.relate([{ parent: PARENT, child: "child2" }]);
+        family.relate([{ parent: "child2", child: "nibling" }]);
+        family.relate([{ parent: "nibling", child: CHILD }]);
         expect(family.parents(CHILD)).toStrictEqual(new Set(["nibling"]));
       });
 
@@ -286,14 +268,14 @@ describe("OrderedOverlappingHierarchy", () => {
         // A --> B & X
         // C --> X
         // B --> C ==> transitive reduction
-        hierarchy.batchRelate([
+        hierarchy.relate([
           { parent: "0", child: "A" },
           { parent: "0", child: "C" },
           { parent: "A", child: "B" },
           { parent: "A", child: "X" },
           { parent: "C", child: "X" },
-          { parent: "B", child: "C" }
-        ])
+          { parent: "B", child: "C" },
+        ]);
         expect(hierarchy.children("A")).toStrictEqual(["B"]);
       });
     });

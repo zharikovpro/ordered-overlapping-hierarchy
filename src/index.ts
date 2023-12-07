@@ -17,6 +17,10 @@ interface Relationship<T> extends ParentChild<T> {
   index: number;
 }
 
+interface RelateArgument<T> extends ParentChild<T> {
+  index?: number;
+}
+
 export default class OrderedOverlappingHierarchy<Member> {
   readonly hierarch: Member;
   #childrenMap: Map<Member, Array<Member>> = new Map();
@@ -82,26 +86,28 @@ export default class OrderedOverlappingHierarchy<Member> {
 
   members = (): Set<Member> => new Set(this.#childrenMap.keys());
 
-  batchRelate = (relationships: Array<ParentChild<Member>>): void => { // todo: make it the primary interface
-    relationships.forEach(this.relate, this);
+  // todo: define an interface for result
+  relate = (
+    relationships: Array<RelateArgument<Member>>
+  ): Array<Relationship<Member> | LoopError | CycleError> => {
+    const errors = relationships.map((rel) => this.#createRelationship(rel));
     this.#reduce();
-  }
+    return errors;
+  };
 
-  relate({
+  #createRelationship({
     parent,
     child,
     index,
-  }: ParentChild<Member> & { index?: number }):
-    | Relationship<Member>
-    | LoopError
-    | CycleError {
+  }: RelateArgument<Member>): // todo: use interface for result
+  Relationship<Member> | LoopError | CycleError {
     if (parent === child)
       return new LoopError("Cannot relate member to itself");
     if (this.members().has(child) && this.descendants(child)?.has(parent)) {
       return new CycleError("Cannot relate ancestor as a child");
     }
 
-    this.relate({ parent: this.hierarch, child: parent });
+    this.#createRelationship({ parent: this.hierarch, child: parent });
     this.#add(child);
 
     const effectiveIndex = this.#position(
@@ -109,8 +115,6 @@ export default class OrderedOverlappingHierarchy<Member> {
       child,
       index
     );
-
-    //this.#reduce();
 
     return { parent, child, index: effectiveIndex };
   }
