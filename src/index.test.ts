@@ -75,7 +75,7 @@ describe("OrderedOverlappingHierarchy", () => {
 
     test("Restructuring a clone keeps the source structure intact", () => {
       const originalMembers = family.members();
-      clone.relationships().forEach(clone.unrelate, clone)
+      clone.relationships().forEach(clone.unrelate, clone);
       clone.relate({ parent: clone.hierarch, child: "New Child" });
       clone.relate({ parent: "New Child", child: "New Parent" });
       expect(family.members()).toStrictEqual(originalMembers);
@@ -123,7 +123,9 @@ describe("OrderedOverlappingHierarchy", () => {
 
     test("When parent is not a member, relates it to the hierarch", () => {
       familyRelationship("ORPHAN", CHILD);
-      expect(family.parents("ORPHAN")).toStrictEqual(new Set([family.hierarch]));
+      expect(family.parents("ORPHAN")).toStrictEqual(
+        new Set([family.hierarch])
+      );
     });
 
     test("Relates member to the parent as a child", () => {
@@ -133,7 +135,9 @@ describe("OrderedOverlappingHierarchy", () => {
 
     test("Relating the same child again returns the same relationship", () => {
       familyRelationship(CHILD, "grandchild");
-      expect((familyRelationship(CHILD, "grandchild") as Relationship).index).toBeDefined();
+      expect(
+        (familyRelationship(CHILD, "grandchild") as Relationship).index
+      ).toBeDefined();
     });
 
     test("Relating member to a non-existing parent also adds parent", () => {
@@ -151,7 +155,10 @@ describe("OrderedOverlappingHierarchy", () => {
 
     describe("Order", () => {
       test("New child is related as the last by default", () => {
-        const relationship = familyRelationship(PARENT, "YOUNGER_CHILD") as Relationship;
+        const relationship = familyRelationship(
+          PARENT,
+          "YOUNGER_CHILD"
+        ) as Relationship;
         expect(relationship.index).toStrictEqual(1);
         expect(family.children(PARENT)).toStrictEqual([CHILD, "YOUNGER_CHILD"]);
       });

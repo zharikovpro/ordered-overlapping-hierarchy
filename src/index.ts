@@ -30,7 +30,10 @@ export default class OrderedOverlappingHierarchy<Member> {
     this.#childrenMap.set(this.hierarch, []);
     if (source instanceof OrderedOverlappingHierarchy) {
       source.members().forEach((member) => {
-        this.#childrenMap.set(member, Array.from(source.children(member) || []));
+        this.#childrenMap.set(
+          member,
+          Array.from(source.children(member) || [])
+        );
       });
     }
   }
@@ -39,7 +42,11 @@ export default class OrderedOverlappingHierarchy<Member> {
     this.#childrenMap.set(member, this.children(member) || []);
   };
 
-  #position = (array: Array<Member>, member: Member, index?: number): number => {
+  #position = (
+    array: Array<Member>,
+    member: Member,
+    index?: number
+  ): number => {
     const effectiveIndex = index ?? array.length;
     if (array.includes(member)) {
       array.splice(array.indexOf(member), 1);
@@ -51,7 +58,9 @@ export default class OrderedOverlappingHierarchy<Member> {
   relationships = (): Set<Relationship<Member>> => {
     const relationships = new Set<Relationship<Member>>();
     this.#childrenMap.forEach((children, parent) => {
-      children.forEach((child, index) => relationships.add({ parent, child, index }));
+      children.forEach((child, index) =>
+        relationships.add({ parent, child, index })
+      );
     });
     return relationships;
   };
@@ -66,7 +75,9 @@ export default class OrderedOverlappingHierarchy<Member> {
   };
 
   #reduce = (): void => {
-    [...this.relationships()].filter(this.#isTransitiveRelationship).forEach(this.unrelate, this);
+    [...this.relationships()]
+      .filter(this.#isTransitiveRelationship)
+      .forEach(this.unrelate, this);
   };
 
   members = (): Set<Member> => new Set(this.#childrenMap.keys());
@@ -79,12 +90,13 @@ export default class OrderedOverlappingHierarchy<Member> {
     | Relationship<Member>
     | LoopError
     | CycleError {
-    if (parent === child) return new LoopError("Cannot relate member to itself");
+    if (parent === child)
+      return new LoopError("Cannot relate member to itself");
     if (this.members().has(child) && this.descendants(child)?.has(parent)) {
       return new CycleError("Cannot relate ancestor as a child");
     }
 
-    this.relate({ parent: this.hierarch, child: parent })
+    this.relate({ parent: this.hierarch, child: parent });
     this.#add(child);
 
     const effectiveIndex = this.#position(
