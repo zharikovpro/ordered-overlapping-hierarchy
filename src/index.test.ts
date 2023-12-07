@@ -16,7 +16,7 @@ describe("OrderedOverlappingHierarchy", () => {
     child: string,
     index?: number
   ): Link | LoopError | CycleError => {
-    return family.link({ parent, child, index });
+    return family.relate({ parent, child, index });
   };
 
   // todo: verifyLink(hierarchy, link) -> checks that parent has child at index; child has parent; links has exact link; hierarchy has parent; hierarchy has child;
@@ -38,17 +38,17 @@ describe("OrderedOverlappingHierarchy", () => {
 
     test("String hierarch", () => {
       const hierarchy = new OrderedOverlappingHierarchy<string>("relative");
-      expect(hierarchy.nodes()).toStrictEqual(new Set(["relative"]));
+      expect(hierarchy.members()).toStrictEqual(new Set(["relative"]));
     });
 
     test("Null hierarch", () => {
       const hierarchy = new OrderedOverlappingHierarchy<null>(null);
-      expect(hierarchy.nodes()).toStrictEqual(new Set([null]));
+      expect(hierarchy.members()).toStrictEqual(new Set([null]));
     });
 
     test("Object hierarch", () => {
       const hierarchy = new OrderedOverlappingHierarchy<object>({});
-      expect(hierarchy.nodes()).toStrictEqual(new Set([{}]));
+      expect(hierarchy.members()).toStrictEqual(new Set([{}]));
     });
   });
 
@@ -63,22 +63,22 @@ describe("OrderedOverlappingHierarchy", () => {
       expect(clone.hierarch).toStrictEqual(family.hierarch);
     });
 
-    test("Has the same nodes", () => {
-      expect(clone.nodes()).toStrictEqual(family.nodes());
+    test("Has the same members", () => {
+      expect(clone.members()).toStrictEqual(family.members());
     });
 
     test("Has the same relationships", () => {
-      for (const node of family.nodes()) {
+      for (const node of family.members()) {
         expect(clone.parents(node)).toStrictEqual(family.parents(node));
       }
     });
 
     test("Restructuring a clone keeps the source structure intact", () => {
-      const originalNodes = family.nodes();
-      clone.links().forEach(clone.unlink, clone)
-      clone.link({ parent: clone.hierarch, child: "New Child" });
-      clone.link({ parent: "New Child", child: "New Parent" });
-      expect(family.nodes()).toStrictEqual(originalNodes);
+      const originalNodes = family.members();
+      clone.relationships().forEach(clone.unrelate, clone)
+      clone.relate({ parent: clone.hierarch, child: "New Child" });
+      clone.relate({ parent: "New Child", child: "New Parent" });
+      expect(family.members()).toStrictEqual(originalNodes);
     });
   });
 
@@ -116,9 +116,9 @@ describe("OrderedOverlappingHierarchy", () => {
     });
 
     test("Adding existing node does not change hierarchy", () => {
-      const originalNodes = family.nodes();
+      const originalNodes = family.members();
       familyLink(GRANDPARENT, CHILD);
-      expect(originalNodes).toStrictEqual(family.nodes());
+      expect(originalNodes).toStrictEqual(family.members());
     });
 
     test("When parent doesn not belongs to the hierarchy, links it to the hierarch", () => {
@@ -138,7 +138,7 @@ describe("OrderedOverlappingHierarchy", () => {
 
     test("Linking node to a non-existing parent also adds parent", () => {
       familyLink("missing", CHILD);
-      expect(family.nodes()?.has("missing")).toStrictEqual(true);
+      expect(family.members()?.has("missing")).toStrictEqual(true);
     });
 
     test("Links node to another parent as a child", () => {
@@ -248,12 +248,12 @@ describe("OrderedOverlappingHierarchy", () => {
         // 0 --> A & C
         // A --> B & X
         // C --> X
-        hierarchy.link({ parent: "0", child: "A" });
-        hierarchy.link({ parent: "0", child: "C" });
-        hierarchy.link({ parent: "A", child: "B" });
-        hierarchy.link({ parent: "A", child: "X" });
-        hierarchy.link({ parent: "C", child: "X" });
-        hierarchy.link({ parent: "B", child: "C" });
+        hierarchy.relate({ parent: "0", child: "A" });
+        hierarchy.relate({ parent: "0", child: "C" });
+        hierarchy.relate({ parent: "A", child: "B" });
+        hierarchy.relate({ parent: "A", child: "X" });
+        hierarchy.relate({ parent: "C", child: "X" });
+        hierarchy.relate({ parent: "B", child: "C" });
         expect(hierarchy.children("A")).toStrictEqual(["B"]);
       });
     });
@@ -261,7 +261,7 @@ describe("OrderedOverlappingHierarchy", () => {
 
   describe(".nodes()", () => {
     test("Returns set of all nodes", () => {
-      expect(family.nodes()).toStrictEqual(
+      expect(family.members()).toStrictEqual(
         new Set([GRANDPARENT, PARENT, CHILD])
       );
     });
@@ -269,7 +269,7 @@ describe("OrderedOverlappingHierarchy", () => {
 
   describe(".links()", () => {
     test("Returns set of all links", () => {
-      expect(family.links()).toStrictEqual(
+      expect(family.relationships()).toStrictEqual(
         new Set([
           { parent: GRANDPARENT, child: PARENT, index: 0 },
           { parent: PARENT, child: CHILD, index: 0 },
@@ -318,12 +318,12 @@ describe("OrderedOverlappingHierarchy", () => {
 
   describe(".unlink()", () => {
     test("Unlinking hierarch from itself has no effect", () => {
-      family.unlink({ parent: GRANDPARENT, child: GRANDPARENT });
+      family.unrelate({ parent: GRANDPARENT, child: GRANDPARENT });
       expect(family.hierarch).toStrictEqual(GRANDPARENT);
     });
 
     test("Parent no longer has unlinked child", () => {
-      family.unlink({ parent: PARENT, child: CHILD });
+      family.unrelate({ parent: PARENT, child: CHILD });
       expect(family.children(PARENT)?.includes(CHILD)).toStrictEqual(false);
     });
 
@@ -331,13 +331,13 @@ describe("OrderedOverlappingHierarchy", () => {
       // 0 --> parent & parent2 --> child
       familyLink(family.hierarch, "parent2");
       familyLink("parent2", CHILD);
-      family.unlink({ parent: PARENT, child: CHILD });
+      family.unrelate({ parent: PARENT, child: CHILD });
       expect(family.children("parent2")?.includes(CHILD)).toStrictEqual(true);
     });
 
     test("Child unlinked from the only parent is removed from the hierarchy", () => {
-      family.unlink({ parent: PARENT, child: CHILD });
-      expect(family.nodes().has(CHILD)).toStrictEqual(false);
+      family.unrelate({ parent: PARENT, child: CHILD });
+      expect(family.members().has(CHILD)).toStrictEqual(false);
     });
   });
 });

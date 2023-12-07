@@ -66,9 +66,9 @@ hierarchy.link('H', 'J')
 
 `#hierarch`
 
-`#nodes()`
+`#members()`
 
-`#links()`
+`#relationships()`
 
 `#children(node)`
 

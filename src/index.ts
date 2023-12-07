@@ -8,12 +8,12 @@ class OrderedOverlappingHierarchyError extends Error {
 export class LoopError extends OrderedOverlappingHierarchyError {}
 export class CycleError extends OrderedOverlappingHierarchyError {}
 
-interface Direction<T> {
+interface ParentChild<T> {
   parent: T;
   child: T;
 }
 
-interface Link<T> extends Direction<T> {
+interface Relationship<T> extends ParentChild<T> {
   index: number;
 }
 
@@ -22,14 +22,14 @@ export default class OrderedOverlappingHierarchy<Node> {
   #childrenMap: Map<Node, Array<Node>> = new Map();
 
   #filter = (filter: (node: Node) => boolean): Set<Node> =>
-    new Set([...this.nodes()].filter(filter));
+    new Set([...this.members()].filter(filter));
 
   constructor(source: Node | OrderedOverlappingHierarchy<Node>) {
     this.hierarch =
       source instanceof OrderedOverlappingHierarchy ? source.hierarch : source;
     this.#childrenMap.set(this.hierarch, []);
     if (source instanceof OrderedOverlappingHierarchy) {
-      source.nodes().forEach((node) => {
+      source.members().forEach((node) => {
         this.#childrenMap.set(node, Array.from(source.children(node) || []));
       });
     }
@@ -48,43 +48,43 @@ export default class OrderedOverlappingHierarchy<Node> {
     return effectiveIndex;
   };
 
-  links = (): Set<Link<Node>> => {
-    const links = new Set<Link<Node>>();
+  relationships = (): Set<Relationship<Node>> => {
+    const links = new Set<Relationship<Node>>();
     this.#childrenMap.forEach((children, parent) => {
       children.forEach((child, index) => links.add({ parent, child, index }));
     });
     return links;
   };
 
-  #hasDescendant = ({ parent, child }: Direction<Node>): boolean =>
+  #hasDescendant = ({ parent, child }: ParentChild<Node>): boolean =>
     !!this.descendants(parent)?.has(child);
 
-  #isTransitiveLink = (direction: Direction<Node>): boolean => {
+  #isTransitiveLink = (direction: ParentChild<Node>): boolean => {
     const potentialReduction = new OrderedOverlappingHierarchy(this);
-    potentialReduction.unlink(direction);
+    potentialReduction.unrelate(direction);
     return potentialReduction.#hasDescendant(direction);
   };
 
   #reduce = (): void => {
-    [...this.links()].filter(this.#isTransitiveLink).forEach(this.unlink, this);
+    [...this.relationships()].filter(this.#isTransitiveLink).forEach(this.unrelate, this);
   };
 
-  nodes = (): Set<Node> => new Set(this.#childrenMap.keys());
+  members = (): Set<Node> => new Set(this.#childrenMap.keys());
 
-  link({
+  relate({
     parent,
     child,
     index,
-  }: Direction<Node> & { index?: number }):
-    | Link<Node>
+  }: ParentChild<Node> & { index?: number }):
+    | Relationship<Node>
     | LoopError
     | CycleError {
     if (parent === child) return new LoopError("Cannot link node to itself");
-    if (this.nodes().has(child) && this.descendants(child)?.has(parent)) {
+    if (this.members().has(child) && this.descendants(child)?.has(parent)) {
       return new CycleError("Cannot link ancestor as a child");
     }
 
-    this.link({ parent: this.hierarch, child: parent })
+    this.relate({ parent: this.hierarch, child: parent })
     this.#add(child);
 
     const effectiveIndex = this.#position(
@@ -124,7 +124,7 @@ export default class OrderedOverlappingHierarchy<Node> {
       ? this.#filter((n) => !!this.children(n)?.includes(node))
       : undefined;
 
-  unlink({ parent, child }: Direction<Node>): void {
+  unrelate({ parent, child }: ParentChild<Node>): void {
     this.#childrenMap.set(
       parent,
       this.children(parent)?.filter((item) => item !== child) || []
