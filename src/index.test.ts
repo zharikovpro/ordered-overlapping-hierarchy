@@ -75,14 +75,10 @@ describe("OrderedOverlappingHierarchy", () => {
 
     test("Restructuring a clone keeps the source structure intact", () => {
       const originalNodes = family.nodes();
-      for (const child of clone.nodes()) {
-        for (const parent of clone.parents(child) as Set<string>) {
-          clone.unlink({ parent, child });
-        }
-      }
+      clone.links().forEach(clone.unlink, clone)
       clone.link({ parent: clone.hierarch, child: "New Child" });
       clone.link({ parent: "New Child", child: "New Parent" });
-      expect(originalNodes).toStrictEqual(family.nodes());
+      expect(family.nodes()).toStrictEqual(originalNodes);
     });
   });
 
