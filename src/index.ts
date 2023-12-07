@@ -82,6 +82,11 @@ export default class OrderedOverlappingHierarchy<Member> {
 
   members = (): Set<Member> => new Set(this.#childrenMap.keys());
 
+  batchRelate = (relationships: Array<ParentChild<Member>>): void => { // todo: make it the primary interface
+    relationships.forEach(this.relate, this);
+    this.#reduce();
+  }
+
   relate({
     parent,
     child,
@@ -105,7 +110,7 @@ export default class OrderedOverlappingHierarchy<Member> {
       index
     );
 
-    this.#reduce();
+    //this.#reduce();
 
     return { parent, child, index: effectiveIndex };
   }

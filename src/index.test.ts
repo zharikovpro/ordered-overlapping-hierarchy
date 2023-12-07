@@ -153,6 +153,36 @@ describe("OrderedOverlappingHierarchy", () => {
       );
     });
 
+    test("Batch relating 1000 members takes less than a second", () => {
+      const hierarchy = new OrderedOverlappingHierarchy<string>("0");
+      const relationships: { parent: string, child: string }[] = [];
+      for (let i = 0; i < 1000; i++) {
+        relationships.push({ parent: hierarchy.hierarch, child: i.toString() })
+      }
+      const batchStart = Date.now();
+      hierarchy.batchRelate(relationships);
+      const batchDuration = Date.now() - batchStart;
+      console.log(`BATCH took ${batchDuration} ms`)
+      expect(batchDuration).toBeLessThan(1000); // 224312 - 3m
+    });
+
+    // todo describe Performance //
+    // todo create matrix of Width * Depth relationships; add extra links to check for reduction
+    // test("Relating 1000th member takes less than a second", () => {
+    // TODO: start with batch
+    //   const hierarchy = new OrderedOverlappingHierarchy<string>("0");
+    //   const batchStart = Date.now();
+    //   for (let i = 0; i < 1000; i++) {
+    //     const relateStart = Date.now();
+    //     hierarchy.relate({ parent: hierarchy.hierarch, child: i.toString() });
+    //     const relateDuration = Date.now() - relateStart;
+    //     console.log(`relate ${i} took ${relateDuration} ms`)
+    //   }
+    //   const batchDuration = Date.now() - batchStart;
+    //   console.log(`BATCH took ${batchDuration} ms`)
+    //   expect(batchDuration).toBeLessThan(1000); // 224312 - 3m
+    // });
+
     describe("Order", () => {
       test("New child is related as the last by default", () => {
         const relationship = familyRelationship(
@@ -225,28 +255,28 @@ describe("OrderedOverlappingHierarchy", () => {
 
     describe("Transitive reduction", () => {
       test("Relating to non-child descendant does not change structure", () => {
-        familyRelationship(GRANDPARENT, CHILD);
+        family.batchRelate([{ parent: GRANDPARENT, child: CHILD }])
         expect(family.children(GRANDPARENT)).toStrictEqual([PARENT]);
         expect(family.parents(CHILD)).toStrictEqual(new Set([PARENT]));
       });
 
       test("Relating another ancestor of a child does not change structure", () => {
-        familyRelationship(family.hierarch, "p2");
-        familyRelationship("p2", CHILD);
-        familyRelationship(PARENT, "p2");
+        family.batchRelate([{ parent: family.hierarch, child: "p2" }])
+        family.batchRelate([{ parent: "p2", child: CHILD }])
+        family.batchRelate([{ parent: PARENT, child: "p2" }])
         expect(family.children("p2")).toStrictEqual([CHILD]);
       });
 
       test("When relating to sibling, removes transitive parent relationship", () => {
-        familyRelationship(PARENT, "child2");
-        familyRelationship("child2", CHILD);
+        family.batchRelate([{ parent: PARENT, child: "child2" }])
+        family.batchRelate([{ parent: "child2", child: CHILD }])
         expect(family.parents(CHILD)).toStrictEqual(new Set(["child2"]));
       });
 
       test("When relating to nibling, removes transitive relationship", () => {
-        familyRelationship(PARENT, "child2");
-        familyRelationship("child2", "nibling");
-        familyRelationship("nibling", CHILD);
+        family.batchRelate([{ parent: PARENT, child: "child2" }])
+        family.batchRelate([{ parent: "child2", child: "nibling" }])
+        family.batchRelate([{ parent: "nibling", child: CHILD }])
         expect(family.parents(CHILD)).toStrictEqual(new Set(["nibling"]));
       });
 
@@ -255,12 +285,15 @@ describe("OrderedOverlappingHierarchy", () => {
         // 0 --> A & C
         // A --> B & X
         // C --> X
-        hierarchy.relate({ parent: "0", child: "A" });
-        hierarchy.relate({ parent: "0", child: "C" });
-        hierarchy.relate({ parent: "A", child: "B" });
-        hierarchy.relate({ parent: "A", child: "X" });
-        hierarchy.relate({ parent: "C", child: "X" });
-        hierarchy.relate({ parent: "B", child: "C" });
+        // B --> C ==> transitive reduction
+        hierarchy.batchRelate([
+          { parent: "0", child: "A" },
+          { parent: "0", child: "C" },
+          { parent: "A", child: "B" },
+          { parent: "A", child: "X" },
+          { parent: "C", child: "X" },
+          { parent: "B", child: "C" }
+        ])
         expect(hierarchy.children("A")).toStrictEqual(["B"]);
       });
     });

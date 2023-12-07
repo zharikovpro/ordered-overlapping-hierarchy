@@ -44,15 +44,17 @@ hierarchy.relate('H', 'J')
 
 #### Relate
 
-`hierarchy.relate(...)` automatically removes transitive relationships.
+ℹ️ Relating all members at once is orders of magnitude faster than adding them one by one, as expensive transitive reduction is performed once per call.
 
-`hierarchy.relate({ parent, child }) // as last child`
+`hierarchy.relate([...])` relates batch of members and automatically removes transitive relationships.
 
-`hierarchy.relate({ parent, child, index }) // at specific index`
+`hierarchy.relate([{ parent, child }]) // as last child`
 
-`hierarchy.relate({ parent: 'A', child: 'A' }) // LoopError: Cannot relate member to itself`
+`hierarchy.relate([{ parent, child, index }]) // at specific index`
 
-`hierarchy.relate({ parent: 'D', child: 'A' }) // CycleError: Cannot relate ancestor as a child`
+`hierarchy.relate([{ parent: 'A', child: 'A' }]) // LoopError: Cannot relate member to itself`
+
+`hierarchy.relate([{ parent: 'D', child: 'A' }]) // CycleError: Cannot relate ancestor as a child`
 
 #### Unrelate
 
