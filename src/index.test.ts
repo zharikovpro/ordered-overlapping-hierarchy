@@ -1,6 +1,6 @@
 import OrderedOverlappingHierarchy, { CycleError, LoopError } from "./index";
 
-interface Link {
+interface Relationship {
   parent: string;
   child: string;
   index: number;
@@ -11,27 +11,27 @@ const PARENT = "parent";
 const GRANDPARENT = "grandparent";
 
 describe("OrderedOverlappingHierarchy", () => {
-  const familyLink = (
+  const familyRelationship = (
     parent: string,
     child: string,
     index?: number
-  ): Link | LoopError | CycleError => {
+  ): Relationship | LoopError | CycleError => {
     return family.relate({ parent, child, index });
   };
 
-  // todo: verifyLink(hierarchy, link) -> checks that parent has child at index; child has parent; links has exact link; hierarchy has parent; hierarchy has child;
+  // todo: verifyRelationship(hierarchy, relationship) -> checks that parent has child at index; child has parent; relationships has exact relationship; hierarchy has parent; hierarchy has child;
 
   let family: OrderedOverlappingHierarchy<string>;
 
   beforeEach(() => {
     // grandparent --> parent --> child
     family = new OrderedOverlappingHierarchy(GRANDPARENT);
-    familyLink(GRANDPARENT, PARENT);
-    familyLink(PARENT, CHILD);
+    familyRelationship(GRANDPARENT, PARENT);
+    familyRelationship(PARENT, CHILD);
   });
 
   describe("new OverlappingHierarchy(hierarch)", () => {
-    test("Hierarchy with the single node", () => {
+    test("Exposes hierarch", () => {
       const hierarchy = new OrderedOverlappingHierarchy<string>("");
       expect(hierarchy.hierarch).toStrictEqual("");
     });
@@ -68,17 +68,17 @@ describe("OrderedOverlappingHierarchy", () => {
     });
 
     test("Has the same relationships", () => {
-      for (const node of family.members()) {
-        expect(clone.parents(node)).toStrictEqual(family.parents(node));
+      for (const member of family.members()) {
+        expect(clone.parents(member)).toStrictEqual(family.parents(member));
       }
     });
 
     test("Restructuring a clone keeps the source structure intact", () => {
-      const originalNodes = family.members();
+      const originalMembers = family.members();
       clone.relationships().forEach(clone.unrelate, clone)
       clone.relate({ parent: clone.hierarch, child: "New Child" });
       clone.relate({ parent: "New Child", child: "New Parent" });
-      expect(family.members()).toStrictEqual(originalNodes);
+      expect(family.members()).toStrictEqual(originalMembers);
     });
   });
 
@@ -89,7 +89,7 @@ describe("OrderedOverlappingHierarchy", () => {
 
     test("Returns children ordered from older to younger", () => {
       // grandparent --> parent --> child & younger_child
-      familyLink(PARENT, "YOUNGER_CHILD");
+      familyRelationship(PARENT, "YOUNGER_CHILD");
       expect(family.children(PARENT)).toStrictEqual([CHILD, "YOUNGER_CHILD"]);
     });
 
@@ -100,69 +100,69 @@ describe("OrderedOverlappingHierarchy", () => {
     });
   });
 
-  describe(".link()", () => {
+  describe(".relate()", () => {
     describe("Errors", () => {
-      test("Linking itself returns LoopError", () => {
-        expect(familyLink(CHILD, CHILD)).toStrictEqual(
-          new LoopError("Cannot link node to itself")
+      test("Relating itself returns LoopError", () => {
+        expect(familyRelationship(CHILD, CHILD)).toStrictEqual(
+          new LoopError("Cannot relate member to itself")
         );
       });
 
-      test("Linking ancestor as a child returns CycleError", () => {
-        expect(familyLink(CHILD, GRANDPARENT)).toStrictEqual(
-          new CycleError("Cannot link ancestor as a child")
+      test("Relating ancestor as a child returns CycleError", () => {
+        expect(familyRelationship(CHILD, GRANDPARENT)).toStrictEqual(
+          new CycleError("Cannot relate ancestor as a child")
         );
       });
     });
 
-    test("Adding existing node does not change hierarchy", () => {
-      const originalNodes = family.members();
-      familyLink(GRANDPARENT, CHILD);
-      expect(originalNodes).toStrictEqual(family.members());
+    test("Relating existing member does not change hierarchy", () => {
+      const originalMembers = family.members();
+      familyRelationship(GRANDPARENT, CHILD);
+      expect(originalMembers).toStrictEqual(family.members());
     });
 
-    test("When parent doesn not belongs to the hierarchy, links it to the hierarch", () => {
-      familyLink("ORPHAN", CHILD);
+    test("When parent is not a member, relates it to the hierarch", () => {
+      familyRelationship("ORPHAN", CHILD);
       expect(family.parents("ORPHAN")).toStrictEqual(new Set([family.hierarch]));
     });
 
-    test("Links node to the parent as a child", () => {
-      familyLink(CHILD, "grandchild");
+    test("Relates member to the parent as a child", () => {
+      familyRelationship(CHILD, "grandchild");
       expect(family.children(CHILD)).toStrictEqual(["grandchild"]);
     });
 
-    test("Linking the same child again returns link", () => {
-      familyLink(CHILD, "grandchild");
-      expect((familyLink(CHILD, "grandchild") as Link).index).toBeDefined();
+    test("Relating the same child again returns the same relationship", () => {
+      familyRelationship(CHILD, "grandchild");
+      expect((familyRelationship(CHILD, "grandchild") as Relationship).index).toBeDefined();
     });
 
-    test("Linking node to a non-existing parent also adds parent", () => {
-      familyLink("missing", CHILD);
+    test("Relating member to a non-existing parent also adds parent", () => {
+      familyRelationship("missing", CHILD);
       expect(family.members()?.has("missing")).toStrictEqual(true);
     });
 
-    test("Links node to another parent as a child", () => {
-      familyLink(GRANDPARENT, "another parent");
-      familyLink("another parent", CHILD);
+    test("Relates member to another parent as a child", () => {
+      familyRelationship(GRANDPARENT, "another parent");
+      familyRelationship("another parent", CHILD);
       expect(family.children("another parent")?.includes(CHILD)).toStrictEqual(
         true
       );
     });
 
     describe("Order", () => {
-      test("New child is linked at the end of the children list by default", () => {
-        const link = familyLink(PARENT, "YOUNGER_CHILD") as Link;
-        expect(link.index).toStrictEqual(1);
+      test("New child is related as the last by default", () => {
+        const relationship = familyRelationship(PARENT, "YOUNGER_CHILD") as Relationship;
+        expect(relationship.index).toStrictEqual(1);
         expect(family.children(PARENT)).toStrictEqual([CHILD, "YOUNGER_CHILD"]);
       });
 
       test("Existing child retains index by default", () => {
         // parent --> middle & younger & child
-        familyLink(PARENT, "MIDDLE_CHILD");
-        familyLink(PARENT, "YOUNGER_CHILD");
-        familyLink(PARENT, CHILD);
-        familyLink(PARENT, "MIDDLE_CHILD");
-        familyLink(PARENT, "YOUNGER_CHILD");
+        familyRelationship(PARENT, "MIDDLE_CHILD");
+        familyRelationship(PARENT, "YOUNGER_CHILD");
+        familyRelationship(PARENT, CHILD);
+        familyRelationship(PARENT, "MIDDLE_CHILD");
+        familyRelationship(PARENT, "YOUNGER_CHILD");
         expect(family.children(PARENT)).toStrictEqual([
           CHILD,
           "MIDDLE_CHILD",
@@ -171,19 +171,19 @@ describe("OrderedOverlappingHierarchy", () => {
       });
 
       test("Zero index inserts new child at the beginning", () => {
-        familyLink(PARENT, "OLDEST_CHILD", 0);
+        familyRelationship(PARENT, "OLDEST_CHILD", 0);
         expect(family.children(PARENT)).toStrictEqual(["OLDEST_CHILD", CHILD]);
       });
 
       test("Zero index moves existing child to the beginning", () => {
-        familyLink(PARENT, "SECOND");
-        familyLink(PARENT, "SECOND", 0);
+        familyRelationship(PARENT, "SECOND");
+        familyRelationship(PARENT, "SECOND", 0);
         expect(family.children(PARENT)).toStrictEqual(["SECOND", CHILD]);
       });
 
       test("Non-zero index inserts new child in the middle", () => {
-        familyLink(PARENT, "YOUNGER");
-        familyLink(PARENT, "MIDDLE", 1);
+        familyRelationship(PARENT, "YOUNGER");
+        familyRelationship(PARENT, "MIDDLE", 1);
         expect(family.children(PARENT)).toStrictEqual([
           CHILD,
           "MIDDLE",
@@ -192,9 +192,9 @@ describe("OrderedOverlappingHierarchy", () => {
       });
 
       test("Non-zero index moves first child in the middle", () => {
-        familyLink(PARENT, "MIDDLE");
-        familyLink(PARENT, "YOUNGER");
-        familyLink(PARENT, CHILD, 1);
+        familyRelationship(PARENT, "MIDDLE");
+        familyRelationship(PARENT, "YOUNGER");
+        familyRelationship(PARENT, CHILD, 1);
         expect(family.children(PARENT)).toStrictEqual([
           "MIDDLE",
           CHILD,
@@ -202,13 +202,13 @@ describe("OrderedOverlappingHierarchy", () => {
         ]);
       });
 
-      test("Index bigger than number of items links child at the end", () => {
-        familyLink(PARENT, "LAST", 100);
+      test("Index greater than number of children relates child as last", () => {
+        familyRelationship(PARENT, "LAST", 100);
         expect(family.children(PARENT)).toStrictEqual([CHILD, "LAST"]);
       });
 
-      test("New node is linked at the end of the top level children by default", () => {
-        familyLink(family.hierarch, "parent2");
+      test("New member is related as the last child by default", () => {
+        familyRelationship(family.hierarch, "parent2");
         expect(family.children(family.hierarch)).toStrictEqual([
           "parent",
           "parent2",
@@ -217,33 +217,33 @@ describe("OrderedOverlappingHierarchy", () => {
     });
 
     describe("Transitive reduction", () => {
-      test("Linking to non-child descendant does not change structure", () => {
-        familyLink(GRANDPARENT, CHILD);
+      test("Relating to non-child descendant does not change structure", () => {
+        familyRelationship(GRANDPARENT, CHILD);
         expect(family.children(GRANDPARENT)).toStrictEqual([PARENT]);
         expect(family.parents(CHILD)).toStrictEqual(new Set([PARENT]));
       });
 
-      test("Linking another ancestor of a child does not change structure", () => {
-        familyLink(family.hierarch, "p2");
-        familyLink("p2", CHILD);
-        familyLink(PARENT, "p2");
+      test("Relating another ancestor of a child does not change structure", () => {
+        familyRelationship(family.hierarch, "p2");
+        familyRelationship("p2", CHILD);
+        familyRelationship(PARENT, "p2");
         expect(family.children("p2")).toStrictEqual([CHILD]);
       });
 
-      test("When Linking to sibling, removes redundant parent link", () => {
-        familyLink(PARENT, "child2");
-        familyLink("child2", CHILD);
+      test("When relating to sibling, removes transitive parent relationship", () => {
+        familyRelationship(PARENT, "child2");
+        familyRelationship("child2", CHILD);
         expect(family.parents(CHILD)).toStrictEqual(new Set(["child2"]));
       });
 
-      test("When Linking to nibling, removes redundant links", () => {
-        familyLink(PARENT, "child2");
-        familyLink("child2", "nibling");
-        familyLink("nibling", CHILD);
+      test("When relating to nibling, removes transitive relationship", () => {
+        familyRelationship(PARENT, "child2");
+        familyRelationship("child2", "nibling");
+        familyRelationship("nibling", CHILD);
         expect(family.parents(CHILD)).toStrictEqual(new Set(["nibling"]));
       });
 
-      test("When connecting sub-graphs with shared node, removes transitive link", () => {
+      test("When connecting sub-graphs with shared member, removes transitive relationship", () => {
         const hierarchy = new OrderedOverlappingHierarchy<string>("0");
         // 0 --> A & C
         // A --> B & X
@@ -259,16 +259,16 @@ describe("OrderedOverlappingHierarchy", () => {
     });
   });
 
-  describe(".nodes()", () => {
-    test("Returns set of all nodes", () => {
+  describe(".members()", () => {
+    test("Returns set of all members", () => {
       expect(family.members()).toStrictEqual(
         new Set([GRANDPARENT, PARENT, CHILD])
       );
     });
   });
 
-  describe(".links()", () => {
-    test("Returns set of all links", () => {
+  describe(".relationships()", () => {
+    test("Returns set of all relationships", () => {
       expect(family.relationships()).toStrictEqual(
         new Set([
           { parent: GRANDPARENT, child: PARENT, index: 0 },
@@ -307,8 +307,8 @@ describe("OrderedOverlappingHierarchy", () => {
       expect(family.parents("missing")).toBeUndefined();
     });
 
-    test("Given top-level node, returns empty set", () => {
-      expect(family.parents(GRANDPARENT)).toStrictEqual(new Set());
+    test("Given hierarch, returns empty set", () => {
+      expect(family.parents(family.hierarch)).toStrictEqual(new Set());
     });
 
     test("Given child, returns parents set", () => {
@@ -316,26 +316,26 @@ describe("OrderedOverlappingHierarchy", () => {
     });
   });
 
-  describe(".unlink()", () => {
-    test("Unlinking hierarch from itself has no effect", () => {
+  describe(".unrelate()", () => {
+    test("Unrelating hierarch from itself has no effect", () => {
       family.unrelate({ parent: GRANDPARENT, child: GRANDPARENT });
       expect(family.hierarch).toStrictEqual(GRANDPARENT);
     });
 
-    test("Parent no longer has unlinked child", () => {
+    test("Parent no longer has child", () => {
       family.unrelate({ parent: PARENT, child: CHILD });
       expect(family.children(PARENT)?.includes(CHILD)).toStrictEqual(false);
     });
 
-    test("Child unlinked from one parent still belongs to another parent", () => {
+    test("Child unrelated from one parent still has another parent", () => {
       // 0 --> parent & parent2 --> child
-      familyLink(family.hierarch, "parent2");
-      familyLink("parent2", CHILD);
+      familyRelationship(family.hierarch, "parent2");
+      familyRelationship("parent2", CHILD);
       family.unrelate({ parent: PARENT, child: CHILD });
       expect(family.children("parent2")?.includes(CHILD)).toStrictEqual(true);
     });
 
-    test("Child unlinked from the only parent is removed from the hierarchy", () => {
+    test("Given child with a single parent, when child is unrelated from parent, child is no longer a member", () => {
       family.unrelate({ parent: PARENT, child: CHILD });
       expect(family.members().has(CHILD)).toStrictEqual(false);
     });

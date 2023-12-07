@@ -1,8 +1,8 @@
 # OOH | Ordered Overlapping Hierarchy
 
-Library for modeling [overlapping hierarchy](https://en.wikipedia.org/wiki/Hierarchy#Degree_of_branching), in which nodes can have multiple parents and children are ordered.
+Library for modeling [overlapping hierarchy](https://en.wikipedia.org/wiki/Hierarchy#Degree_of_branching), in which members can have multiple parents and children are ordered.
 
-Equivalent of [transitively reduced](https://en.wikipedia.org/wiki/Transitive_reduction#In_directed_acyclic_graphs) [weighted](https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)#Weighted_graph) [directed acyclic graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph), in which edges represent parenthood and their weights represent order.
+Equivalent of a [transitive reduction](https://en.wikipedia.org/wiki/Transitive_reduction#In_directed_acyclic_graphs) of a [weighted](https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)#Weighted_graph) [directed acyclic graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph), in which edges represent parenthood and their weights represent order.
 
 ## Example
 
@@ -18,18 +18,18 @@ D  E I  J
 
 ```typescript
 const hierarchy = new OverlappingHierarchy('0')
-hierarchy.link('A', '0')
-hierarchy.link('B', '0')
-hierarchy.link('A', 'C')
-hierarchy.link('B', 'C')
-hierarchy.link('C', 'D')
-hierarchy.link('C', 'E')
-hierarchy.link('F', '0')
-hierarchy.link('G', '0')
-hierarchy.link('F', 'H')
-hierarchy.link('G', 'H')
-hierarchy.link('H', 'I')
-hierarchy.link('H', 'J')
+hierarchy.relate('A', '0')
+hierarchy.relate('B', '0')
+hierarchy.relate('A', 'C')
+hierarchy.relate('B', 'C')
+hierarchy.relate('C', 'D')
+hierarchy.relate('C', 'E')
+hierarchy.relate('F', '0')
+hierarchy.relate('G', '0')
+hierarchy.relate('F', 'H')
+hierarchy.relate('G', 'H')
+hierarchy.relate('H', 'I')
+hierarchy.relate('H', 'J')
 ```
 
 ## API
@@ -42,25 +42,25 @@ hierarchy.link('H', 'J')
 
 ### Mutation
 
-#### Link
+#### Relate
 
-`hierarchy.link(...)` automatically removes transitive links.
+`hierarchy.relate(...)` automatically removes transitive relationships.
 
-`hierarchy.link({ parent, child }) // as last child`
+`hierarchy.relate({ parent, child }) // as last child`
 
-`hierarchy.link({ parent, child, index }) // at specific index`
+`hierarchy.relate({ parent, child, index }) // at specific index`
 
-`hierarchy.link({ parent: 'A', child: 'A' }) // LoopError: Cannot link node to itself`
+`hierarchy.relate({ parent: 'A', child: 'A' }) // LoopError: Cannot relate member to itself`
 
-`hierarchy.link({ parent: 'D', child: 'A' }) // CycleError: Cannot link ancestor as a child`
+`hierarchy.relate({ parent: 'D', child: 'A' }) // CycleError: Cannot relate ancestor as a child`
 
-#### Unlink
+#### Unrelate
 
-`hierarchy.unlink({ parent, child }) // unlinks child from parent`
+`hierarchy.unrelate({ parent, child }) // removes child from parent`
 
-`hierarchy.unlink({ parent, child }) // deletes node without parents`
+`hierarchy.unrelate({ parent, child }) // deletes member without parents`
 
-`hierarchy.unlink({ parent: hierarchy.hierarch, child: hierarchy.hierarch }) // no-op`
+`hierarchy.unrelate({ parent: hierarchy.hierarch, child: hierarchy.hierarch }) // no-op`
 
 ### Traversal
 
@@ -70,10 +70,10 @@ hierarchy.link('H', 'J')
 
 `#relationships()`
 
-`#children(node)`
+`#children(member)`
 
-`#descendants(node)`
+`#descendants(member)`
 
-`#parents(node)`
+`#parents(member)`
 
-`#ancestors(node)`
+`#ancestors(member)`
