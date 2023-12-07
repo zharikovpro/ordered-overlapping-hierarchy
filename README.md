@@ -2,7 +2,7 @@
 
 Library for modeling [overlapping hierarchy](https://en.wikipedia.org/wiki/Hierarchy#Degree_of_branching), in which members can have multiple parents and children are ordered.
 
-Equivalent of a [transitive reduction](https://en.wikipedia.org/wiki/Transitive_reduction#In_directed_acyclic_graphs) of a [weighted](https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)#Weighted_graph) [directed acyclic graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph), in which edges represent parenthood and their weights represent order.
+It is [transitively reduced](https://en.wikipedia.org/wiki/Transitive_reduction#In_directed_acyclic_graphs) multiply [connected](https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)#Connected_graph) [weighted](https://en.wikipedia.org/wiki/Graph_(discrete_mathematics)#Weighted_graph) [directed acyclic graph](https://en.wikipedia.org/wiki/Directed_acyclic_graph) with a single [source](https://en.wikipedia.org/wiki/Glossary_of_graph_theory#S). Edges represent parenthood and their weights represent order.
 
 ## Example
 
