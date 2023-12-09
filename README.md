@@ -18,18 +18,20 @@ D  E I  J
 
 ```typescript
 const hierarchy = new OverlappingHierarchy('0')
-hierarchy.relate('A', '0')
-hierarchy.relate('B', '0')
-hierarchy.relate('A', 'C')
-hierarchy.relate('B', 'C')
-hierarchy.relate('C', 'D')
-hierarchy.relate('C', 'E')
-hierarchy.relate('F', '0')
-hierarchy.relate('G', '0')
-hierarchy.relate('F', 'H')
-hierarchy.relate('G', 'H')
-hierarchy.relate('H', 'I')
-hierarchy.relate('H', 'J')
+hierarchy.relate([
+    { parent: '0', child: 'A' },
+    { parent: '0', child: 'B' },
+    { parent: 'A', child: 'C' },
+    { parent: 'B', child: 'C' },
+    { parent: 'C', child: 'D' },
+    { parent: 'C', child: 'E' },
+    { parent: '0', child: 'F' },
+    { parent: '0', child: 'G' },
+    { parent: 'F', child: 'H' },
+    { parent: 'G', child: 'H' },
+    { parent: 'H', child: 'I' },
+    { parent: 'H', child: 'J' }
+])
 ```
 
 ## API
