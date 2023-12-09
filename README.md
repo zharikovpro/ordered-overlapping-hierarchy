@@ -36,7 +36,7 @@ hierarchy.relate('H', 'J')
 
 ### Initialization
 
-`const hierarch = new OverlappingHierarchy(hierarch)`
+`const hierarchy = new OverlappingHierarchy(hierarch)`
 
 `const cloned = new OverlappingHierarchy(hierarchy)`
 
