@@ -23,6 +23,7 @@ interface RelateArgument<T> extends ParentChild<T> {
 
 export default class OrderedOverlappingHierarchy<Member> {
   readonly hierarch: Member;
+
   #childrenMap: Map<Member, Array<Member>> = new Map();
 
   #filter = (filter: (member: Member) => boolean): Set<Member> =>
