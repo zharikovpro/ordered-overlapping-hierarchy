@@ -52,7 +52,7 @@ hierarchy.relate([
 
 `hierarchy.relate([{ parent, child }]) // as last child`
 
-`hierarchy.relate([{ parent, child, index }]) // at specific index`
+`hierarchy.relate([{ parent, child, childIndex }]) // at specific index`
 
 `hierarchy.relate([{ parent: 'A', child: 'A' }]) // LoopError: Cannot relate member to itself`
 

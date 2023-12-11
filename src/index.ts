@@ -14,11 +14,11 @@ interface ParentChild<T> {
 }
 
 interface Relationship<T> extends ParentChild<T> {
-  index: number;
+  childIndex: number;
 }
 
 interface RelateArgument<T> extends ParentChild<T> {
-  index?: number;
+  childIndex?: number;
 }
 
 export default class OrderedOverlappingHierarchy<Member> {
@@ -64,7 +64,7 @@ export default class OrderedOverlappingHierarchy<Member> {
     const relationships = new Set<Relationship<Member>>();
     this.#childrenMap.forEach((children, parent) => {
       children.forEach((child, index) =>
-        relationships.add({ parent, child, index })
+        relationships.add({ parent, child, childIndex: index })
       );
     });
     return relationships;
@@ -99,7 +99,7 @@ export default class OrderedOverlappingHierarchy<Member> {
   #createRelationship({
     parent,
     child,
-    index,
+    childIndex,
   }: RelateArgument<Member>): // todo: use interface for result
   Relationship<Member> | LoopError | CycleError {
     if (parent === child)
@@ -114,10 +114,10 @@ export default class OrderedOverlappingHierarchy<Member> {
     const effectiveIndex = this.#position(
       this.#childrenMap.get(parent) as Member[],
       child,
-      index
+      childIndex
     );
 
-    return { parent, child, index: effectiveIndex };
+    return { parent, child, childIndex: effectiveIndex };
   }
 
   children(member: Member): Array<Member> | undefined {

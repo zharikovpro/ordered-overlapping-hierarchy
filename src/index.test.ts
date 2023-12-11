@@ -3,7 +3,7 @@ import OrderedOverlappingHierarchy, { CycleError, LoopError } from "./index";
 interface Relationship {
   parent: string;
   child: string;
-  index: number;
+  childIndex: number;
 }
 
 const CHILD = "child";
@@ -16,7 +16,7 @@ describe("OrderedOverlappingHierarchy", () => {
     child: string,
     index?: number
   ): Array<Relationship | LoopError | CycleError> => {
-    return family.relate([{ parent, child, index }]);
+    return family.relate([{ parent, child, childIndex: index }]);
   };
 
   // todo: verifyRelationship(hierarchy, relationship) -> checks that parent has child at index; child has parent; relationships has exact relationship; hierarchy has parent; hierarchy has child;
@@ -136,7 +136,7 @@ describe("OrderedOverlappingHierarchy", () => {
     test("Relating the same child again returns the same relationship", () => {
       familyRelationship(CHILD, "grandchild");
       expect(
-        (familyRelationship(CHILD, "grandchild")[0] as Relationship).index
+        (familyRelationship(CHILD, "grandchild")[0] as Relationship).childIndex
       ).toBeDefined();
     });
 
@@ -171,7 +171,7 @@ describe("OrderedOverlappingHierarchy", () => {
           PARENT,
           "YOUNGER_CHILD"
         )[0] as Relationship;
-        expect(relationship.index).toStrictEqual(1);
+        expect(relationship.childIndex).toStrictEqual(1);
         expect(family.children(PARENT)).toStrictEqual([CHILD, "YOUNGER_CHILD"]);
       });
 
@@ -293,8 +293,8 @@ describe("OrderedOverlappingHierarchy", () => {
     test("Returns set of all relationships", () => {
       expect(family.relationships()).toStrictEqual(
         new Set([
-          { parent: GRANDPARENT, child: PARENT, index: 0 },
-          { parent: PARENT, child: CHILD, index: 0 },
+          { parent: GRANDPARENT, child: PARENT, childIndex: 0 },
+          { parent: PARENT, child: CHILD, childIndex: 0 },
         ])
       );
     });
