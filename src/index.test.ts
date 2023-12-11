@@ -148,9 +148,7 @@ describe("OrderedOverlappingHierarchy", () => {
     test("Relates member to another parent as a child", () => {
       familyRelationship(GRANDPARENT, "another parent");
       familyRelationship("another parent", CHILD);
-      expect(family.children("another parent")?.includes(CHILD)).toStrictEqual(
-        true
-      );
+      expect(family.parents(CHILD)).toStrictEqual(new Set([PARENT, "another parent"]));
     });
 
     test("Batch relating 1000 members takes less than a second", () => {
