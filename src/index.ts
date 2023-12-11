@@ -99,8 +99,7 @@ export default class OrderedOverlappingHierarchy<Member> {
     parent,
     child,
     childIndex,
-  }: RelateArgument<Member>):
-  Relationship<Member> | LoopError | CycleError {
+  }: RelateArgument<Member>): Relationship<Member> | LoopError | CycleError {
     if (parent === child)
       return new LoopError("Cannot relate member to itself");
     if (this.members().has(child) && this.descendants(child)?.has(parent)) {

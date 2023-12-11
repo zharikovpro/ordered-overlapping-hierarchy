@@ -236,11 +236,14 @@ describe("OrderedOverlappingHierarchy", () => {
 
       test("Parent retains index", () => {
         const hierarchy = new OrderedOverlappingHierarchy<string>("0");
-        hierarchy.relate([{ parent: hierarchy.hierarch, child: "A" } ]);
-        hierarchy.relate([{ parent: hierarchy.hierarch, child: "B" } ]);
-        hierarchy.relate([{ parent: "A", child: "C" } ]);
-        expect(hierarchy.children(hierarchy.hierarch)).toStrictEqual(["A", "B"]);
-      })
+        hierarchy.relate([{ parent: hierarchy.hierarch, child: "A" }]);
+        hierarchy.relate([{ parent: hierarchy.hierarch, child: "B" }]);
+        hierarchy.relate([{ parent: "A", child: "C" }]);
+        expect(hierarchy.children(hierarchy.hierarch)).toStrictEqual([
+          "A",
+          "B",
+        ]);
+      });
     });
 
     describe("Transitive reduction", () => {
