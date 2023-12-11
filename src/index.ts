@@ -87,7 +87,6 @@ export default class OrderedOverlappingHierarchy<Member> {
 
   members = (): Set<Member> => new Set(this.#childrenMap.keys());
 
-  // todo: define an interface for result
   relate = (
     relationships: Array<RelateArgument<Member>>
   ): Array<Relationship<Member> | LoopError | CycleError> => {
@@ -100,7 +99,7 @@ export default class OrderedOverlappingHierarchy<Member> {
     parent,
     child,
     childIndex,
-  }: RelateArgument<Member>): // todo: use interface for result
+  }: RelateArgument<Member>):
   Relationship<Member> | LoopError | CycleError {
     if (parent === child)
       return new LoopError("Cannot relate member to itself");
@@ -108,7 +107,9 @@ export default class OrderedOverlappingHierarchy<Member> {
       return new CycleError("Cannot relate ancestor as a child");
     }
 
-    this.#createRelationship({ parent: this.hierarch, child: parent });
+    if (!this.members().has(parent)) {
+      this.#createRelationship({ parent: this.hierarch, child: parent });
+    }
     this.#add(child);
 
     const effectiveIndex = this.#position(
