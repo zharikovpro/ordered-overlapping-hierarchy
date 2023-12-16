@@ -68,16 +68,16 @@ hierarchy.relate([
 
 ### Traversal
 
-`#hierarch`
+`.hierarch()`
 
-`#members()`
+`.members()`
 
-`#relationships()`
+`.relationships()`
 
-`#children(member)`
+`.children(member)`
 
-`#descendants(member)`
+`.descendants(member)`
 
-`#parents(member)`
+`.parents(member)`
 
-`#ancestors(member)`
+`.ancestors(member)`

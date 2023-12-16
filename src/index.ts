@@ -22,7 +22,7 @@ interface RelateArgument<T> extends ParentChild<T> {
 }
 
 export default class OrderedOverlappingHierarchy<Member> {
-  readonly hierarch: Member;
+  #hierarch: Member;
 
   #childrenMap: Map<Member, Array<Member>> = new Map();
 
@@ -30,9 +30,9 @@ export default class OrderedOverlappingHierarchy<Member> {
     new Set([...this.members()].filter(filter));
 
   constructor(source: Member | OrderedOverlappingHierarchy<Member>) {
-    this.hierarch =
-      source instanceof OrderedOverlappingHierarchy ? source.hierarch : source;
-    this.#childrenMap.set(this.hierarch, []);
+    this.#hierarch =
+      source instanceof OrderedOverlappingHierarchy ? source.#hierarch : source;
+    this.#childrenMap.set(this.#hierarch, []);
     if (source instanceof OrderedOverlappingHierarchy) {
       source.members().forEach((member) => {
         this.#childrenMap.set(
@@ -59,6 +59,8 @@ export default class OrderedOverlappingHierarchy<Member> {
     array.splice(effectiveIndex, 0, member);
     return effectiveIndex;
   };
+
+  hierarch = (): Member => this.#hierarch;
 
   relationships = (): Set<Relationship<Member>> => {
     const relationships = new Set<Relationship<Member>>();
@@ -107,7 +109,7 @@ export default class OrderedOverlappingHierarchy<Member> {
     }
 
     if (!this.members().has(parent)) {
-      this.#createRelationship({ parent: this.hierarch, child: parent });
+      this.#createRelationship({ parent: this.#hierarch, child: parent });
     }
     this.#add(child);
 
