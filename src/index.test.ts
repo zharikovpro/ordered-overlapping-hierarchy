@@ -148,14 +148,19 @@ describe("OrderedOverlappingHierarchy", () => {
     test("Relates member to another parent as a child", () => {
       familyRelationship(GRANDPARENT, "another parent");
       familyRelationship("another parent", CHILD);
-      expect(family.parents(CHILD)).toStrictEqual(new Set([PARENT, "another parent"]));
+      expect(family.parents(CHILD)).toStrictEqual(
+        new Set([PARENT, "another parent"])
+      );
     });
 
     test("Batch relating 1000 members takes less than a second", () => {
       const hierarchy = new OrderedOverlappingHierarchy<string>("0");
       const relationships: { parent: string; child: string }[] = [];
       for (let i = 0; i < 1000; i++) {
-        relationships.push({ parent: hierarchy.hierarch(), child: i.toString() });
+        relationships.push({
+          parent: hierarchy.hierarch(),
+          child: i.toString(),
+        });
       }
       const batchStart = Date.now();
       hierarchy.relate(relationships);
