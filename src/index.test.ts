@@ -10,6 +10,8 @@ const CHILD = "child";
 const PARENT = "parent";
 const GRANDPARENT = "grandparent";
 
+// TODO: consider making it immutable and always return new hierarchy
+
 describe("OrderedOverlappingHierarchy", () => {
   const familyRelationship = (
     parent: string,
