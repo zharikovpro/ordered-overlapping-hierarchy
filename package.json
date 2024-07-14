@@ -1,6 +1,6 @@
 {
   "name": "ordered-overlapping-hierarchy",
-  "version": "0.10.4",
+  "version": "0.11.0",
   "description": "Library for modeling ordered overlapping hierarchy, in which nodes can have multiple parents and children are ordered.",
   "repository": {
     "type": "git",
@@ -36,6 +36,6 @@
     "prettier": "^2.8.8",
     "ts-jest": "^29.0.5",
     "ts-node": "^10.9.1",
-    "typescript": "^5.1.3"
+    "typescript": "^5.5.3"
   }
 }
